@@ -1,4 +1,8 @@
 import matplotlib.pyplot as plt
+import numpy as np
+import math
+from collections import Counter
+from sklearn import preprocessing
 from sklearn import datasets
 from sklearn import model_selection
 
@@ -57,3 +61,48 @@ def test_plot_2d():
     y = iris.target
     X1, X2, y1, y2 = model_selection.train_test_split(X, y, test_size=0.5, random_state=42)
     plot_2d(X1, y1, X2, y2)
+
+def plot_coincidence(y1, y2):
+    """
+    plot the coincidence between 2 sets of labes on the same dataset
+
+    Parameters
+    ----------
+    y1 : list
+        first list of labels
+    y2 : list
+        second list of labels
+
+    Returns
+    -------
+    None
+
+    >>> plot_coincidence(y1, y2)
+    """
+    if len(y1) != len(y2):
+        print('The two sets of labels are not of same length')
+    # count coincidence
+    pairs = list(zip(y1, y2))
+    freq = Counter(pairs)
+    xyz = [tuple(list(key) + [value]) for key, value in freq.items()]
+    x, y, z = (np.array(i[0]) for i in zip(zip(*xyz)))
+    z = z * z
+
+    # rescale size
+    scaler = MinMaxScaler()
+    scaler.fit(z.reshape(-1, 1))
+    z = scaler.transform(z.reshape(-1, 1)).ravel() + 1
+
+    # use the scatter function
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    ax.scatter(x, y, s=z*2000, c=z, cmap="RdYlGn", alpha=0.4, edgecolors="black", linewidth=2)
+    plt.xticks(range(min(x), math.ceil(max(x))+1))
+    plt.yticks(range(min(y), math.ceil(max(y))+1))
+    plt.show()
+
+def test_plot_coincidence():
+    y1 = [1, 2, 1, 2, 1, 3, 4, 5, 4, 4]
+    y2 = [3, 1, 3, 2, 2, 2, 1, 3, 1, 1]
+    plot_coincidence(y1, y2)
+    for i, label_y1 in enumerate(y1):
+        label_y2 = y2[i]
