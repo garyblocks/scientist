@@ -4,10 +4,13 @@ from sklearn.neighbors import KDTree
 from sklearn import datasets
 import matplotlib.pyplot as plt
 
+
 def SCV(X, y, k, seed=0):
     """
-    Standard stratified cross-validation (SCV): It places an equal number of samples of each
-    class on each partition to maintain class distributions equal in all partitions.
+    Standard stratified cross-validation (SCV):
+    It places an equal number of samples of each
+    class on each partition to maintain class
+    distributions equal in all partitions.
 
     pseudocode:
     for each class cj ∈ C do
@@ -56,11 +59,14 @@ def SCV(X, y, k, seed=0):
             class_idx = np.delete(class_idx, used)
     return folds
 
+
 def DB_SCV(X, y, k, dist='euclidean', seed=0):
     """
-    Distribution-balanced SCV (DB-SCV): keeping data distribution as similar as possible
-    between training and test folds by maximizing diversity on each fold and trying to keep
-    all folds similar to each other.
+    Distribution-balanced SCV (DB-SCV):
+    keeping data distribution as similar as possible
+    between training and test folds by maximizing
+    diversity on each fold and trying to keep all
+    folds similar to each other.
 
     pseudocode:
     for each class cj ∈ C do
@@ -100,7 +106,7 @@ def DB_SCV(X, y, k, dist='euclidean', seed=0):
         e = np.random.choice(class_idx, 1)
         i = 0
         while class_idx.shape[0]:
-            x = X[e,:]
+            x = X[e, :]
             folds[i].append(e[0])
             class_idx = np.delete(class_idx, np.where(class_idx == e))
             i = (i + 1) % k
@@ -109,14 +115,16 @@ def DB_SCV(X, y, k, dist='euclidean', seed=0):
                 break
             kdt = KDTree(X_cj, leaf_size=30, metric=dist)
             ind = kdt.query(x, k=1, return_distance=False)
-            e = np.array([class_idx[ind[0,0]]])
+            e = np.array([class_idx[ind[0, 0]]])
     return folds
+
 
 def DOB_SCV(X, y, k, dist='euclidean', seed=0):
     """
-    Distribution-balanced SCV (DB-SCV): a method designed for testing the maximal influence
-    of partition-based covariate shift. It creates folds that are as different as possible
-    to each other.
+    Distribution-balanced SCV (DB-SCV):
+    a method designed for testing the maximal influence
+    of partition-based covariate shift. It creates folds
+    that are as different as possible to each other.
 
     pseudocode:
     for each class cj ∈ C do
@@ -155,7 +163,7 @@ def DOB_SCV(X, y, k, dist='euclidean', seed=0):
             X_cj = X[class_idx]
             # randomly select an example of class cj
             e = np.random.choice(class_idx, 1)
-            x = X[e,:]
+            x = X[e, :]
             # find k closest examples
             n = min(k, len(X_cj))
             kdt = KDTree(X_cj, leaf_size=30, metric=dist)
@@ -166,6 +174,7 @@ def DOB_SCV(X, y, k, dist='euclidean', seed=0):
                 seen.append(loc)
             class_idx = np.delete(class_idx, seen, axis=0)
     return folds
+
 
 def MS_SCV(X, y, k, dist='euclidean'):
     """
@@ -210,13 +219,12 @@ def MS_SCV(X, y, k, dist='euclidean'):
         # calc fold size
         n = int(counts[cj] / k)
         sizes = [n] * k
-        remains = counts[cj] % k  # put remains in the folds
 
         class_idx = np.array([ind for ind, val in enumerate(y) if val == cj])
         e = np.random.choice(class_idx, 1)
         for i in range(len(folds)):
             for sz in range(sizes[i]):
-                x = X[e,:]
+                x = X[e, :]
                 folds[i].append(e[0])
                 class_idx = np.delete(class_idx, np.where(class_idx == e))
                 X_cj = X[class_idx]
@@ -225,8 +233,9 @@ def MS_SCV(X, y, k, dist='euclidean'):
                     break
                 kdt = KDTree(X_cj, leaf_size=30, metric=dist)
                 ind = kdt.query(x, k=1, return_distance=False)
-                e = np.array([class_idx[ind[0,0]]])
+                e = np.array([class_idx[ind[0, 0]]])
     return folds
+
 
 def small_test(cv):
     # unit test
@@ -239,6 +248,7 @@ def small_test(cv):
     print(X[fold_index[1]])
     print(y[fold_index[1]])
 
+
 def integrate_test(cv):
     # integrate test
     iris = datasets.load_iris()
@@ -246,6 +256,7 @@ def integrate_test(cv):
     y = iris.target
     f = cv(X, y, k=2)
     plot_2d(X[f[0]], y[f[0]], X[f[1]], y[f[1]])
+
 
 def plot_2d(X1, y1, X2, y2, title1='dataset1', title2='dataset2'):
     # Two subplots, unpack the axes array immediately
@@ -273,6 +284,6 @@ def plot_2d(X1, y1, X2, y2, title1='dataset1', title2='dataset2'):
         ax.get_yaxis().tick_left()
         ax.spines['left'].set_position(('outward', 10))
         ax.spines['bottom'].set_position(('outward', 10))
-    fig.legend(colors, labels, loc='lower center', ncol=len(C), labelspacing=0.)
+    fig.legend(colors, labels, loc='lower center', ncol=len(C), labelspacing=0.5)
     plt.tight_layout(pad=3)
     plt.show()
