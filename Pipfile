@@ -12,3 +12,6 @@ pandas = "==0.22.0"
 pandastable = "*"
 ipython = "*"
 seaborn = "*"
+
+[requires]
+python_version = "3.6"

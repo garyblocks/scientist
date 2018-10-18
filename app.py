@@ -163,4 +163,9 @@ class StartPage(tk.Frame):
 
 
 app = Scientist()
-app.mainloop()
+while True:
+    try:
+        app.mainloop()
+        break
+    except UnicodeDecodeError:
+        pass
