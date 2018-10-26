@@ -1,12 +1,12 @@
 import tkinter as tk
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score  # , precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 from libs.font import TITLE, LABEL
 from libs.button import Button
 
 
-class AnalysisClassificationPage(tk.Frame):
+class ClassificationBiclassPage(tk.Frame):
 
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master)
@@ -134,16 +134,16 @@ class ClassificationControlPane(tk.Frame):
         y_test_pred = self.model.predict(self.X_test)
         train_accuracy = accuracy_score(self.y_train, y_train_pred)
         test_accuracy = accuracy_score(self.y_test, y_test_pred)
-        # train_precision = precision_score(self.y_train, y_train_pred)
-        # test_precision = precision_score(self.y_test, y_test_pred)
-        # train_recall = recall_score(self.y_train, y_train_pred)
-        # test_recall = recall_score(self.y_test, y_test_pred)
+        train_precision = precision_score(self.y_train, y_train_pred)
+        test_precision = precision_score(self.y_test, y_test_pred)
+        train_recall = recall_score(self.y_train, y_train_pred)
+        test_recall = recall_score(self.y_test, y_test_pred)
         self.controller.result_pane.label_train_accuracy['text'] += str(train_accuracy)  # noqa
         self.controller.result_pane.label_test_accuracy['text'] += str(test_accuracy)  # noqa
-        # self.controller.result_pane.label_train_precision['text'] += str(train_precision)  # noqa
-        # self.controller.result_pane.label_test_precision['text'] += str(test_precision)  # noqa
-        # self.controller.result_pane.label_train_recall['text'] += str(train_recall)  # noqa
-        # self.controller.result_pane.label_test_recall['text'] += str(test_recall)  # noqa
+        self.controller.result_pane.label_train_precision['text'] += str(train_precision)  # noqa
+        self.controller.result_pane.label_test_precision['text'] += str(test_precision)  # noqa
+        self.controller.result_pane.label_train_recall['text'] += str(train_recall)  # noqa
+        self.controller.result_pane.label_test_recall['text'] += str(test_recall)  # noqa
 
 
 class ClassificationResultPane(tk.Frame):
@@ -168,29 +168,29 @@ class ClassificationResultPane(tk.Frame):
                                         font=LABEL, bg='#F3F3F3')
         label_train_accuracy.grid(row=self.row, column=0, columnspan=3)
         self.label_train_accuracy = label_train_accuracy
-        # self.row += 1
-        # label_train_precision = tk.Label(self, text="train precision: ",
-        #                                  font=LABEL, bg='#F3F3F3')
-        # label_train_precision.grid(row=self.row, column=0, columnspan=3)
-        # self.label_train_precision = label_train_precision
-        # self.row += 1
-        # label_train_recall = tk.Label(self, text="train recall: ",
-        #                               font=LABEL, bg='#F3F3F3')
-        # label_train_recall.grid(row=self.row, column=0, columnspan=3)
-        # self.label_train_recall = label_train_recall
+        self.row += 1
+        label_train_precision = tk.Label(self, text="train precision: ",
+                                         font=LABEL, bg='#F3F3F3')
+        label_train_precision.grid(row=self.row, column=0, columnspan=3)
+        self.label_train_precision = label_train_precision
+        self.row += 1
+        label_train_recall = tk.Label(self, text="train recall: ",
+                                      font=LABEL, bg='#F3F3F3')
+        label_train_recall.grid(row=self.row, column=0, columnspan=3)
+        self.label_train_recall = label_train_recall
         # test
         self.row += 1
         label_test_accuracy = tk.Label(self, text="test accuracy: ",
                                        font=LABEL, bg='#F3F3F3')
         label_test_accuracy.grid(row=self.row, column=0, columnspan=3)
         self.label_test_accuracy = label_test_accuracy
-        # self.row += 1
-        # label_test_precision = tk.Label(self, text="test precision: ",
-        #                                 font=LABEL, bg='#F3F3F3')
-        # label_test_precision.grid(row=self.row, column=0, columnspan=3)
-        # self.label_test_precision = label_test_precision
-        # self.row += 1
-        # label_test_recall = tk.Label(self, text="test recall: ",
-        #                              font=LABEL, bg='#F3F3F3')
-        # label_test_recall.grid(row=self.row, column=0, columnspan=3)
-        # self.label_test_recall = label_test_recall
+        self.row += 1
+        label_test_precision = tk.Label(self, text="test precision: ",
+                                        font=LABEL, bg='#F3F3F3')
+        label_test_precision.grid(row=self.row, column=0, columnspan=3)
+        self.label_test_precision = label_test_precision
+        self.row += 1
+        label_test_recall = tk.Label(self, text="test recall: ",
+                                     font=LABEL, bg='#F3F3F3')
+        label_test_recall.grid(row=self.row, column=0, columnspan=3)
+        self.label_test_recall = label_test_recall

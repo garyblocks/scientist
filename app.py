@@ -7,7 +7,8 @@ from pages.preprocess import DataPreprocessPage
 from pages.view import DataViewPage
 from pages.clustering.kmeans import ClusteringKmeansPage
 from pages.clustering.hierarchy import ClusteringHierarchyPage
-from pages.classification import AnalysisClassificationPage
+from pages.classification.biclass import ClassificationBiclassPage
+from pages.classification.multiclass import ClassificationMulticlassPage
 from pages.coincidence import AnalysisCoincidencePage
 
 DATAFRAMES = {}
@@ -39,6 +40,8 @@ class Scientist(tk.Tk):
         data_menu.add_command(label="Preprocess", command=self.data_preprocess)
         self.menu.add_cascade(label="Data", menu=data_menu)
         analysis_menu = tk.Menu(self.menu)
+
+        # clustering
         analysis_clustering_menu = tk.Menu(analysis_menu)
         analysis_clustering_menu.add_command(
             label="Kmeans",
@@ -52,9 +55,20 @@ class Scientist(tk.Tk):
             label="Clustering",
             menu=analysis_clustering_menu
         )
-        analysis_menu.add_command(
+
+        # classification
+        analysis_classification_menu = tk.Menu(analysis_menu)
+        analysis_classification_menu.add_command(
+            label="Biclass",
+            command=self.classification_biclass
+        )
+        analysis_classification_menu.add_command(
+            label="Multiclass",
+            command=self.classification_multiclass
+        )
+        analysis_menu.add_cascade(
             label="Classification",
-            command=self.analysis_classification
+            menu=analysis_classification_menu
         )
         analysis_menu.add_command(
             label="Coincidence",
@@ -72,7 +86,7 @@ class Scientist(tk.Tk):
         self.frames = {}
         pages = (StartPage, DataViewPage, DataPreprocessPage,
                  ClusteringKmeansPage, ClusteringHierarchyPage,
-                 AnalysisClassificationPage,
+                 ClassificationBiclassPage, ClassificationMulticlassPage,
                  AnalysisCoincidencePage)
         for F in pages:
             frame = F(container, self)
@@ -130,9 +144,13 @@ class Scientist(tk.Tk):
         self.frames[ClusteringHierarchyPage].reload()
         self.show_frame(ClusteringHierarchyPage)
 
-    def analysis_classification(self):
-        self.frames[AnalysisClassificationPage].reload()
-        self.show_frame(AnalysisClassificationPage)
+    def classification_biclass(self):
+        self.frames[ClassificationBiclassPage].reload()
+        self.show_frame(ClassificationBiclassPage)
+
+    def classification_multiclass(self):
+        self.frames[ClassificationMulticlassPage].reload()
+        self.show_frame(ClassificationMulticlassPage)
 
     def analysis_coincidence(self):
         self.frames[AnalysisCoincidencePage].reload()
