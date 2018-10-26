@@ -9,7 +9,7 @@ class Button(tk.Button):
         super().__init__(
             self.master,
             text=text,
-            bg='#F3F3F3',
+            highlightbackground='#F3F3F3',
             padx=15,
             pady=10,
             command=command)
