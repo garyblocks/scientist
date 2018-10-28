@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from libs.table import Table
 from libs.font import TITLE, SECTION, LABEL
 from libs.button import Button
+from libs.select import Select
 
 
 class DataPreprocessPage(tk.Frame):
@@ -47,9 +48,9 @@ class PrepControlPane(tk.Frame):
         tk.Frame.__init__(self, master, bg='#F3F3F3')
         self.master = master
         self.controller = controller
-        self.features = set()
         self.row = 0
         self.df = self.controller.df
+        self.select = None
         self.init_frame()
 
     def reload(self):
@@ -65,25 +66,10 @@ class PrepControlPane(tk.Frame):
         )
         text.grid(row=self.row, column=0, columnspan=6)
 
-        # select features to cluster on
-        self.row += 1
-        label_feats = tk.Label(self, text="features: no feature",
-                               font=LABEL, bg='#F3F3F3')
-        label_feats.grid(row=self.row, column=0, columnspan=6)
-        self.label_feats = label_feats
-        self.row += 1
-        chosen = tk.StringVar(self)
-        choices = self.df.columns.values.tolist()
-        if not choices:
-            choices = ['']
-        chosen.set(choices[0] if choices else '')
-        add_feat = tk.OptionMenu(self, chosen, *choices)
-        add_feat.grid(row=self.row, column=0, columnspan=4)
-        self.add_feat = chosen
-        btn_add_feat = tk.Button(self, text="add", bg='#F3F3F3',
-                                 padx=15, pady=10,
-                                 command=lambda: self.add_feature())
-        btn_add_feat.grid(row=self.row, column=4, columnspan=2, padx=5, pady=5)
+        # select feature
+        select = Select(self, self.df.columns.values.tolist())
+        select.grid(row=self.row, column=0, columnspan=6)
+        self.select = select
 
         # normalization
         self.row += 1
@@ -95,7 +81,7 @@ class PrepControlPane(tk.Frame):
         # scale in to 0-1
         Button(self, "scale 01", 1, 0, 3, lambda: self.scale_01())
         # normalization
-        Button(self, "normalization", 0, 3, 3, lambda: self.norm())
+        Button(self, "scale norm", 0, 3, 3, lambda: self.norm())
 
         # encode
         self.row += 1
@@ -105,9 +91,20 @@ class PrepControlPane(tk.Frame):
         )
         label_enc.grid(row=self.row, column=0, columnspan=6)
         # encode categorical feature to integers
-        Button(self, "label encoder", 1, 0, 3, lambda: self.label_encoder())
+        Button(self, "label encoder", 1, 0, 6, lambda: self.label_encoder())
         # one hot encoder
-        Button(self, "one hot encoder", 0, 3, 3, lambda: self.one_hot())
+        Button(self, "k hot encoder", 1, 0, 6, lambda: self.one_hot())
+        # encode by quantile
+        self.row += 1
+        label_index = tk.Label(
+            self, text="num of quantiles:",
+            font=LABEL, bg='#F3F3F3'
+        )
+        label_index.grid(row=self.row, column=0, columnspan=3)
+        entry_nq = tk.Entry(self, highlightbackground='#F3F3F3')
+        entry_nq.grid(row=self.row, column=3, columnspan=2)
+        self.entry_nq = entry_nq
+        Button(self, "quantile encoder", 1, 0, 6, lambda: self.q_encoder())
 
         # drop
         self.row += 1
@@ -121,13 +118,12 @@ class PrepControlPane(tk.Frame):
         # remove by index
         self.row += 1
         label_index = tk.Label(
-            self, text="index",
+            self, text="index:",
             font=LABEL, bg='#F3F3F3'
         )
-        label_index.grid(row=self.row, column=0, columnspan=6)
-        self.row += 1
-        entry_index = tk.Entry(self)
-        entry_index.grid(row=self.row, column=0, columnspan=6)
+        label_index.grid(row=self.row, column=0, columnspan=3)
+        entry_index = tk.Entry(self, highlightbackground='#F3F3F3')
+        entry_index.grid(row=self.row, column=3, columnspan=2)
         self.entry_index = entry_index
         Button(self, "drop subjects", 1, 0, 6, lambda: self.drop_index())
 
@@ -139,12 +135,11 @@ class PrepControlPane(tk.Frame):
         )
         label_sample.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
-        label_nrow = tk.Label(self, text="num of rows",
+        label_nrow = tk.Label(self, text="num of rows:",
                               font=LABEL, bg='#F3F3F3')
-        label_nrow.grid(row=self.row, column=0, columnspan=6)
-        self.row += 1
-        entry_nrow = tk.Entry(self)
-        entry_nrow.grid(row=self.row, column=0, columnspan=6)
+        label_nrow.grid(row=self.row, column=0, columnspan=3)
+        entry_nrow = tk.Entry(self, highlightbackground='#F3F3F3')
+        entry_nrow.grid(row=self.row, column=3, columnspan=2)
         self.entry_nrow = entry_nrow
         Button(self, "sample", 1, 0, 6, lambda: self.sample())
 
@@ -159,29 +154,38 @@ class PrepControlPane(tk.Frame):
 
     def scale_01(self):
         df = self.df
-        for f in self.features:
+        for f in self.select.tags:
             df[f] = (df[f] - df[f].min()) / (df[f].max() - df[f].min())
         self.controller.reload()
 
     def norm(self):
         df = self.df
-        for f in self.features:
+        for f in self.select.tags:
             df[f] = (df[f] - df[f].mean()) / df[f].std()
         self.controller.reload()
 
     def label_encoder(self):
         encoder = LabelEncoder()
         df = self.df
-        for f in self.features:
+        for f in self.select.tags:
             new_col_name = f + '_label'
             df[new_col_name] = encoder.fit_transform(df[f])
+            df[new_col_name].astype('int32')
+        self.controller.reload()
+
+    def q_encoder(self):
+        df = self.df
+        n = int(self.entry_nq.get())
+        for f in self.select.tags:
+            new_col_name = f + '_quantile'
+            df[new_col_name] = pd.qcut(df[f], n, labels=False)
             df[new_col_name].astype('int32')
         self.controller.reload()
 
     def one_hot(self):
         encoder = LabelBinarizer()
         df = self.df
-        for f in self.features:
+        for f in self.select.tags:
             data = encoder.fit_transform(df[f].values)
             names = [f + '_' + c for c in encoder.classes_]
             for i, n in enumerate(names):
@@ -189,14 +193,9 @@ class PrepControlPane(tk.Frame):
             df.drop(columns=f, inplace=True)
         self.controller.reload()
 
-    def add_feature(self):
-        new_feature = self.add_feat.get()
-        self.features.add(new_feature)
-        self.label_feats['text'] = 'features: ' + ','.join(list(self.features))
-
     def drop_feature(self):
         df = self.df
-        df.drop(list(self.features), inplace=True, axis=1)
+        df.drop(list(self.select.tags), inplace=True, axis=1)
         self.controller.reload()
 
     def drop_index(self):
