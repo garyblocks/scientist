@@ -3,7 +3,9 @@ import pandas as pd
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 from libs.plot import Plot
-from libs.font import TITLE, SECTION, LABEL
+from libs.button import Button
+from libs.select import Select
+from libs.font import TITLE, LABEL
 
 
 class ClusteringHierarchyPage(tk.Frame):
@@ -18,7 +20,7 @@ class ClusteringHierarchyPage(tk.Frame):
     def reload(self):
         self.df = self.controller.DF
         self.ctrl_pane.df = self.df
-        self.ctrl_pane.init_frame()
+        self.ctrl_pane.reload()
 
     def init_frame(self):
         # split out left panel
@@ -45,120 +47,88 @@ class HierarchyControlPane(tk.Frame):
         self.controller = controller
         self.df = self.controller.df
         self.plot = self.controller.plot
-        self.features = set()
+        self.select = None
+        self.row = 0
         self.init_frame()
 
     def reload(self):
+        self.row = 0
         self.init_frame()
 
     def init_frame(self):
         # title
-        row = 0
         text = tk.Label(
-            self, text="Clustering", font=TITLE, bg='#F3F3F3',
+            self, text="Hierarchy", font=TITLE, bg='#F3F3F3',
             width=25
         )
-        text.grid(row=row, column=0, columnspan=3)
+        text.grid(row=self.row, column=0, columnspan=6)
 
-        # settings
-        row += 1
-        label_sec_cluster = tk.Label(self, text="Settings",
-                                     font=SECTION, bg='#F3F3F3')
-        label_sec_cluster.grid(row=row, column=0, columnspan=3)
-
-        # select features to cluster on
-        row += 1
-        label_feats = tk.Label(self, text="features: no feature",
-                               font=LABEL, bg='#F3F3F3')
-        label_feats.grid(row=row, column=0, columnspan=3)
-        self.label_feats = label_feats
-        row += 1
-        chosen = tk.StringVar(self)
-        choices = self.df.columns.values.tolist()
-        if not choices:
-            choices = ['']
-        chosen.set(choices[0] if choices else '')
-        add_feat = tk.OptionMenu(self, chosen, *choices)
-        add_feat.grid(row=row, column=0, columnspan=2)
-        self.add_feat = chosen
-        btn_add_feat = tk.Button(self, text="add", bg='#F3F3F3',
-                                 padx=15, pady=10,
-                                 command=lambda: self.add_feature())
-        btn_add_feat.grid(row=row, column=2, columnspan=1, padx=5, pady=5)
+        # select features
+        select = Select(self, self.df.columns.values.tolist())
+        select.grid(row=self.row, column=0, columnspan=6)
+        self.select = select
 
         # set linkage
-        row += 1
+        self.row += 1
         label_link = tk.Label(self, text="linkage",
                               font=LABEL, bg='#F3F3F3')
-        label_link.grid(row=row, column=0, columnspan=3)
-        row += 1
+        label_link.grid(row=self.row, column=0, columnspan=6)
+        self.row += 1
         link = tk.StringVar(self)
         links = [
             'ward', 'single', 'complete', 'average', 'weighted', 'centroid',
             'median'
         ]
         link.set('ward')
-        chose_link = tk.OptionMenu(self, link, *links)
-        chose_link.grid(row=row, column=0, columnspan=3)
+        link_menu = tk.OptionMenu(self, link, *links)
+        link_menu.config(bg="#F3F3F3")
+        link_menu.grid(row=self.row, column=0, columnspan=6)
         self.link = link
 
         # set distance
-        row += 1
+        self.row += 1
         label_dist = tk.Label(self, text="distance",
                               font=LABEL, bg='#F3F3F3')
-        label_dist.grid(row=row, column=0, columnspan=3)
-        row += 1
+        label_dist.grid(row=self.row, column=0, columnspan=6)
+        self.row += 1
         dist = tk.StringVar(self)
         dists = [
             'euclidean', 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean',
             'cosine', 'correlation', 'hamming', 'jaccard', 'chebyshev'
         ]
         dist.set('euclidean')
-        chose_dist = tk.OptionMenu(self, dist, *dists)
-        chose_dist.grid(row=row, column=0, columnspan=3)
+        dist_menu = tk.OptionMenu(self, dist, *dists)
+        dist_menu.config(bg="#F3F3F3")
+        dist_menu.grid(row=self.row, column=0, columnspan=6)
         self.dist = dist
 
         # set number of clusters
-        row += 1
+        self.row += 1
         label_set_k = tk.Label(self, text="number of clusters",
                                font=LABEL, bg='#F3F3F3')
-        label_set_k.grid(row=row, column=0, columnspan=3)
-        row += 1
-        entry_k = tk.Entry(self)
-        entry_k.grid(row=row, column=0, columnspan=3)
+        label_set_k.grid(row=self.row, column=0, columnspan=3)
+        entry_k = tk.Entry(self, highlightbackground='#F3F3F3')
+        entry_k.grid(row=self.row, column=3, columnspan=2)
         self.entry_k = entry_k
 
         # set name of columns
-        row += 1
+        self.row += 1
         label_set_col_name = tk.Label(
             self, text="name of column",
             font=LABEL, bg='#F3F3F3'
         )
-        label_set_col_name.grid(row=row, column=0, columnspan=3)
-        row += 1
-        entry_col_name = tk.Entry(self)
-        entry_col_name.grid(row=row, column=0, columnspan=3)
+        label_set_col_name.grid(row=self.row, column=0, columnspan=3)
+        entry_col_name = tk.Entry(self, highlightbackground="#F3F3F3")
+        entry_col_name.grid(row=self.row, column=3, columnspan=2)
         self.entry_col_name = entry_col_name
 
         # run the clustering algorithm
-        row += 1
-        btn_cluster = tk.Button(self, text="cluster", bg='#F3F3F3',
-                                padx=15, pady=10,
-                                command=lambda: self.cluster())
-        btn_cluster.grid(row=row, column=0, columnspan=3, padx=10, pady=10)
-
+        Button(self, "cluster", 1, 0, 6, lambda: self.hierarchy())
         # clear plot
-        row += 1
-        btn_clear = tk.Button(self, text="clear", bg='#F3F3F3',
-                              padx=15, pady=10,
-                              command=lambda: self.clear())
-        btn_clear.grid(row=row, column=0, columnspan=3, padx=10, pady=10)
-
-    def cluster(self):
-        self.hierarchy()
+        Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
     def hierarchy(self):
-        feat_list = list(self.features)
+        feat_list = list(self.select.tags)
         X = self.df[feat_list].values
         k = int(self.entry_k.get())
         method = self.link.get()
@@ -209,11 +179,6 @@ class HierarchyControlPane(tk.Frame):
             colors, labels, loc='best', labelspacing=0
         )
         self.plot.canvas.draw()
-
-    def add_feature(self):
-        new_feature = self.add_feat.get()
-        self.features.add(new_feature)
-        self.label_feats['text'] = 'features: ' + ','.join(list(self.features))
 
     def clear(self):
         self.features = set()
