@@ -1,9 +1,12 @@
 import tkinter as tk
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import confusion_matrix
 from libs.font import TITLE, LABEL
 from libs.button import Button
+from libs.select import Select
 
 
 class ClassificationBiclassPage(tk.Frame):
@@ -17,6 +20,7 @@ class ClassificationBiclassPage(tk.Frame):
 
     def reload(self):
         self.df = self.controller.DF
+        self.ctrl_pane.df = self.df
         self.ctrl_pane.reload()
 
     def init_frame(self):
@@ -42,67 +46,66 @@ class ClassificationControlPane(tk.Frame):
         self.master = master
         self.controller = controller
         self.df = self.controller.df
-        self.features = set()
+        self.select = None
         self.row = 0
         self.init_frame()
 
     def reload(self):
         self.row = 0
-        self.df = self.controller.df
         self.init_frame()
 
     def init_frame(self):
         title_lable = tk.Label(
-            self, text="Classification", font=TITLE, bg='#F3F3F3',
+            self, text="Biclass", font=TITLE, bg='#F3F3F3',
             width=25
         )
-        title_lable.grid(row=self.row, column=0, columnspan=3)
+        title_lable.grid(row=self.row, column=0, columnspan=6)
 
-        # select features to classify
-        self.row += 1
-        label_feats = tk.Label(self, text="features: no feature",
-                               font=LABEL, bg='#F3F3F3')
-        label_feats.grid(row=self.row, column=0, columnspan=3)
-        self.label_feats = label_feats
-        self.row += 1
-        chosen = tk.StringVar(self)
-        choices = self.df.columns.values.tolist()
-        if not choices:
-            choices = ['']
-        chosen.set(choices[0] if choices else '')
-        add_feat = tk.OptionMenu(self, chosen, *choices)
-        add_feat.grid(row=self.row, column=0, columnspan=2)
-        self.add_feat = chosen
-        btn_add_feat = tk.Button(self, text="add", bg='#F3F3F3',
-                                 padx=15, pady=10,
-                                 command=lambda: self.add_feature())
-        btn_add_feat.grid(row=self.row, column=2, columnspan=1, padx=5, pady=5)
+        # select feature
+        select = Select(self, self.df.columns.values.tolist())
+        select.grid(row=self.row, column=0, columnspan=6)
+        self.select = select
 
         # select features to classify
         self.row += 1
         label_class = tk.Label(self, text="choose class feature",
                                font=LABEL, bg='#F3F3F3')
-        label_class.grid(row=self.row, column=0, columnspan=3)
+        label_class.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         chosen_cls = tk.StringVar(self)
         choices = self.df.columns.values.tolist()
         if not choices:
             choices = ['']
         chosen_cls.set(choices[0] if choices else '')
-        chose_cls = tk.OptionMenu(self, chosen_cls, *choices)
-        chose_cls.grid(row=self.row, column=0, columnspan=2)
+        feature_menu = tk.OptionMenu(self, chosen_cls, *choices)
+        feature_menu.config(bg="#F3F3F3")
+        feature_menu.grid(row=self.row, column=0, columnspan=6)
         self.chose_cls = chosen_cls
+
+        # select features to classify
+        self.row += 1
+        label_algo = tk.Label(self, text="choose classification algorithm",
+                              font=LABEL, bg='#F3F3F3')
+        label_algo.grid(row=self.row, column=0, columnspan=6)
+        self.row += 1
+        chosen_algo = tk.StringVar(self)
+        algos = ['kNN', 'SGD']
+        chosen_algo.set(algos[0])
+        algo_menu = tk.OptionMenu(self, chosen_algo, *algos)
+        algo_menu.config(bg="#F3F3F3")
+        algo_menu.grid(row=self.row, column=0, columnspan=6)
+        self.chose_algo = chosen_algo
 
         # train test split
         self.row += 1
         label_sec_1 = tk.Label(self, text="train-test split ratio",
                                font=LABEL, bg='#F3F3F3')
-        label_sec_1.grid(row=self.row, column=0, columnspan=3)
+        label_sec_1.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         entry_split_rate = tk.Entry(self)
-        entry_split_rate.grid(row=self.row, column=0, columnspan=3)
+        entry_split_rate.grid(row=self.row, column=0, columnspan=6)
         self.split_rate = entry_split_rate
-        Button(self, "classify", 1, 0, 3, lambda: self.run())
+        Button(self, "classify", 1, 0, 6, lambda: self.run())
 
         # default sizes
         col_count, row_count = self.grid_size()
@@ -111,17 +114,16 @@ class ClassificationControlPane(tk.Frame):
         for row in range(row_count):
             self.grid_rowconfigure(row, minsize=20)
 
-    def add_feature(self):
-        new_feature = self.add_feat.get()
-        self.features.add(new_feature)
-        self.label_feats['text'] = 'features: ' + ','.join(list(self.features))
-
     def run(self):
-        feat_list = list(self.features)
+        feat_list = list(self.select.tags)
         self.X = self.df[feat_list].values
         self.y = self.df[self.chose_cls.get()].values
         self.hold_out()
-        self.model = KNeighborsClassifier()
+        algo = self.chose_algo.get()
+        if algo == 'kNN':
+            self.model = KNeighborsClassifier()
+        elif algo == 'SGD':
+            self.model = SGDClassifier(random_state=101)
         self.model.fit(self.X_train, self.y_train)
         self.evaluate()
 
@@ -138,12 +140,16 @@ class ClassificationControlPane(tk.Frame):
         test_precision = precision_score(self.y_test, y_test_pred)
         train_recall = recall_score(self.y_train, y_train_pred)
         test_recall = recall_score(self.y_test, y_test_pred)
+        train_conf_mx = confusion_matrix(self.y_train, y_train_pred)
+        test_conf_mx = confusion_matrix(self.y_test, y_test_pred)
         self.controller.result_pane.label_train_accuracy['text'] += str(train_accuracy)  # noqa
         self.controller.result_pane.label_test_accuracy['text'] += str(test_accuracy)  # noqa
         self.controller.result_pane.label_train_precision['text'] += str(train_precision)  # noqa
         self.controller.result_pane.label_test_precision['text'] += str(test_precision)  # noqa
         self.controller.result_pane.label_train_recall['text'] += str(train_recall)  # noqa
         self.controller.result_pane.label_test_recall['text'] += str(test_recall)  # noqa
+        self.controller.result_pane.label_train_conf_mx['text'] += str(train_conf_mx)  # noqa
+        self.controller.result_pane.label_test_conf_mx['text'] += str(test_conf_mx)  # noqa
 
 
 class ClassificationResultPane(tk.Frame):
@@ -178,6 +184,11 @@ class ClassificationResultPane(tk.Frame):
                                       font=LABEL, bg='#F3F3F3')
         label_train_recall.grid(row=self.row, column=0, columnspan=3)
         self.label_train_recall = label_train_recall
+        self.row += 1
+        label_train_conf_mx = tk.Label(self, text="train confusion matrix",
+                                       font=LABEL, bg='#F3F3F3')
+        label_train_conf_mx.grid(row=self.row, column=0, columnspan=3)
+        self.label_train_conf_mx = label_train_conf_mx
         # test
         self.row += 1
         label_test_accuracy = tk.Label(self, text="test accuracy: ",
@@ -194,3 +205,8 @@ class ClassificationResultPane(tk.Frame):
                                      font=LABEL, bg='#F3F3F3')
         label_test_recall.grid(row=self.row, column=0, columnspan=3)
         self.label_test_recall = label_test_recall
+        self.row += 1
+        label_test_conf_mx = tk.Label(self, text="test confusion matrix: ",
+                                      font=LABEL, bg='#F3F3F3')
+        label_test_conf_mx.grid(row=self.row, column=0, columnspan=3)
+        self.label_test_conf_mx = label_test_conf_mx
