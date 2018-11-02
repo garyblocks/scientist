@@ -82,7 +82,7 @@ class ClassificationControlPane(tk.Frame):
         feature_menu.grid(row=self.row, column=0, columnspan=6)
         self.chose_cls = chosen_cls
 
-        # select features to classify
+        # select algorithm to use
         self.row += 1
         label_algo = tk.Label(self, text="choose classification algorithm",
                               font=LABEL, bg='#F3F3F3')
@@ -116,10 +116,10 @@ class ClassificationControlPane(tk.Frame):
 
     def run(self):
         feat_list = list(self.select.tags)
+        algo = self.chose_algo.get()
         self.X = self.df[feat_list].values
         self.y = self.df[self.chose_cls.get()].values
         self.hold_out()
-        algo = self.chose_algo.get()
         if algo == 'kNN':
             self.model = KNeighborsClassifier()
         elif algo == 'SGD':
@@ -185,7 +185,7 @@ class ClassificationResultPane(tk.Frame):
         label_train_recall.grid(row=self.row, column=0, columnspan=3)
         self.label_train_recall = label_train_recall
         self.row += 1
-        label_train_conf_mx = tk.Label(self, text="train confusion matrix",
+        label_train_conf_mx = tk.Label(self, text="train confusion matrix: ",
                                        font=LABEL, bg='#F3F3F3')
         label_train_conf_mx.grid(row=self.row, column=0, columnspan=3)
         self.label_train_conf_mx = label_train_conf_mx
