@@ -9,6 +9,7 @@ from pages.clustering.kmeans import ClusteringKmeansPage
 from pages.clustering.hierarchy import ClusteringHierarchyPage
 from pages.classification.biclass import ClassificationBiclassPage
 from pages.classification.multiclass import ClassificationMulticlassPage
+from pages.regression.linear import RegressionLinearPage
 from pages.coincidence import AnalysisCoincidencePage
 
 DATAFRAMES = {}
@@ -70,10 +71,23 @@ class Scientist(tk.Tk):
             label="Classification",
             menu=analysis_classification_menu
         )
+
+        # regression
+        analysis_regression_menu = tk.Menu(analysis_menu)
+        analysis_regression_menu.add_command(
+            label="linear",
+            command=self.regression_linear
+        )
+        analysis_menu.add_cascade(
+            label="regression",
+            menu=analysis_regression_menu
+        )
+
         analysis_menu.add_command(
             label="Coincidence",
             command=self.analysis_coincidence
         )
+
         self.menu.add_cascade(label="Analysis", menu=analysis_menu)
 
         # create container
@@ -87,7 +101,7 @@ class Scientist(tk.Tk):
         pages = (StartPage, DataViewPage, DataPreprocessPage,
                  ClusteringKmeansPage, ClusteringHierarchyPage,
                  ClassificationBiclassPage, ClassificationMulticlassPage,
-                 AnalysisCoincidencePage)
+                 RegressionLinearPage, AnalysisCoincidencePage)
         for F in pages:
             frame = F(container, self)
             self.frames[F] = frame
@@ -151,6 +165,10 @@ class Scientist(tk.Tk):
     def classification_multiclass(self):
         self.frames[ClassificationMulticlassPage].reload()
         self.show_frame(ClassificationMulticlassPage)
+
+    def regression_linear(self):
+        self.frames[RegressionLinearPage].reload()
+        self.show_frame(RegressionLinearPage)
 
     def analysis_coincidence(self):
         self.frames[AnalysisCoincidencePage].reload()
