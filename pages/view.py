@@ -68,9 +68,9 @@ class ViewControlPane(tk.Frame):
         title_table.grid(row=self.row, column=0, columnspan=6)
 
         # display random rows
-        Button(self, "shuffle", 1, 0, 6, lambda: self.shuffle())
-        Button(self, "statistics", 1, 0, 6, lambda: self.statistic())
-        Button(self, "correlation", 1, 0, 6, lambda: self.correlation())
+        Button(self, "shuffle", 1, 0, 2, lambda: self.shuffle())
+        Button(self, "statistics", 0, 2, 2, lambda: self.statistic())
+        Button(self, "correlation", 0, 4, 2, lambda: self.correlation())
 
         # previous page and next page button
         Button(self, "prev", 1, 0, 2, lambda: self.prev_view())

@@ -1,5 +1,6 @@
 import tkinter as tk
 import numpy as np
+import decimal
 BOLD = 'Helvetica 14 bold'
 FONT = 'Helvetica 14'
 
@@ -67,11 +68,17 @@ class InnerTable(tk.Frame):
             )
             cell.grid(row=i, column=0)
             for j in range(1, self.num_of_cols + 1):
+                number = str(data[i-1, j-1])
+                if number.replace('.', '').replace('-', '').isdecimal(
+                ) and decimal.Decimal(number).as_tuple().exponent < -4:
+                    # round number to 4 decimal places
+                    number = str(round(float(number), 4))
+
                 cell = tk.Label(
                     self,
                     height=2,
                     padx=3,
-                    text=str(data[i - 1, j - 1]),
+                    text=number,
                     bg=bg_color,
                     font=FONT
                 )
