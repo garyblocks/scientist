@@ -1,6 +1,7 @@
 import tkinter as tk
 import numpy as np
 import math
+from pandas.tools.plotting import scatter_matrix
 from libs.table import Table
 from libs.plot import Plot
 from libs.font import TITLE
@@ -95,7 +96,9 @@ class ViewControlPane(tk.Frame):
         # histogram
         Button(self, "histogram", 0, 2, 2, lambda: self.plot_hist())
         # linechart
-        Button(self, "linechart", 0, 4, 2, lambda: self.plot_line())
+        Button(self, "line chart", 0, 4, 2, lambda: self.plot_line())
+        # scatter matrix
+        Button(self, "scatter matrix", 1, 0, 6, lambda: self.plot_scatter_matrix())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -171,6 +174,13 @@ class ViewControlPane(tk.Frame):
         self.plot.ax.legend(
             labels=feat_list, loc='best', labelspacing=0
         )
+        self.plot.canvas.draw()
+
+    def plot_scatter_matrix(self):
+        self.show_plot()
+        feat_list = list(self.select.tags)
+        tmp = self.df[feat_list]
+        scatter_matrix(tmp, ax=self.plot.ax, diagonal='kde')
         self.plot.canvas.draw()
 
     def show_plot(self):
