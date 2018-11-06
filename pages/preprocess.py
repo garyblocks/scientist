@@ -2,7 +2,7 @@ import tkinter as tk
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from libs.table import Table
-from libs.font import TITLE, SECTION, LABEL
+from libs.font import SECTION, LABEL
 from libs.button import Button
 from libs.select import Select
 
@@ -59,13 +59,6 @@ class PrepControlPane(tk.Frame):
         self.init_frame()
 
     def init_frame(self):
-        # title
-        text = tk.Label(
-            self, text="Preprocess", font=TITLE,
-            bg='#F3F3F3', width=25
-        )
-        text.grid(row=self.row, column=0, columnspan=6)
-
         # select feature
         select = Select(self, self.df.columns.values.tolist())
         select.grid(row=self.row, column=0, columnspan=6)
@@ -74,26 +67,23 @@ class PrepControlPane(tk.Frame):
         # normalization
         self.row += 1
         label_norm = tk.Label(
-            self, text="normalization",
+            self, text="scaler",
             font=SECTION, bg='#F3F3F3'
         )
         label_norm.grid(row=self.row, column=0, columnspan=6)
         # scale in to 0-1
-        Button(self, "scale 01", 1, 0, 3, lambda: self.scale_01())
+        Button(self, "scale 01", 1, 1, 2, lambda: self.scale_01())
         # normalization
-        Button(self, "scale norm", 0, 3, 3, lambda: self.norm())
+        Button(self, "scale norm", 0, 3, 2, lambda: self.norm())
 
         # encode
         self.row += 1
-        label_enc = tk.Label(
-            self, text="encoding",
-            font=SECTION, bg='#F3F3F3'
-        )
+        label_enc = tk.Label(self, text="encoder", font=SECTION, bg='#F3F3F3')
         label_enc.grid(row=self.row, column=0, columnspan=6)
         # encode categorical feature to integers
-        Button(self, "label encoder", 1, 0, 6, lambda: self.label_encoder())
+        Button(self, "label encoder", 1, 0, 3, lambda: self.label_encoder())
         # one hot encoder
-        Button(self, "k hot encoder", 1, 0, 6, lambda: self.one_hot())
+        Button(self, "k hot encoder", 0, 3, 3, lambda: self.one_hot())
         # encode by quantile
         self.row += 1
         label_index = tk.Label(
@@ -150,7 +140,9 @@ class PrepControlPane(tk.Frame):
             font=SECTION, bg='#F3F3F3'
         )
         label_sample.grid(row=self.row, column=0, columnspan=6)
-        Button(self, "drop NAN", 1, 0, 6, lambda: self.drop_na())
+        Button(self, "drop NAN", 1, 0, 2, lambda: self.drop_na())
+        Button(self, "fill mean", 0, 2, 2, lambda: self.fill_mean())
+        Button(self, "fill median", 0, 4, 2, lambda: self.fill_median())
 
     def scale_01(self):
         df = self.df
@@ -211,7 +203,10 @@ class PrepControlPane(tk.Frame):
         df.drop(new_df.index, inplace=True)  # remove old rows
         self.controller.reload()
 
-    def drop_na(self):
-        df = self.df
-        df.dropna(inplace=True)
+    def fill_mean(self):
+        self.df.fillna(self.df.mean(), inplace=True)
+        self.controller.reload()
+
+    def fill_median(self):
+        self.df.fillna(self.df.median(), inplace=True)
         self.controller.reload()
