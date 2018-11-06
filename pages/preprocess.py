@@ -203,6 +203,10 @@ class PrepControlPane(tk.Frame):
         df.drop(new_df.index, inplace=True)  # remove old rows
         self.controller.reload()
 
+    def drop_na(self):
+        self.df.dropna(inplace=True)
+        self.controller.reload()
+
     def fill_mean(self):
         self.df.fillna(self.df.mean(), inplace=True)
         self.controller.reload()

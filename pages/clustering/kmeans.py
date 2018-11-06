@@ -90,6 +90,8 @@ class KmeansControlPane(tk.Frame):
 
         # run the clustering algorithm
         Button(self, "cluster", 1, 0, 6, lambda: self.kmeans())
+        # run the clustering algorithm
+        Button(self, "radviz", 1, 0, 6, lambda: self.plot_radvis())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -136,6 +138,13 @@ class KmeansControlPane(tk.Frame):
             colors, labels, loc='best', labelspacing=0
         )
         self.plot.canvas.draw()
+
+    def plot_radvis(self):
+        cls = self.entry_col_name.get()
+        feat_list = list(self.select.tags) + [cls]
+        tmp = self.df[feat_list]
+        self.plot.clear()
+        self.plot.plot_radviz(tmp, cls)
 
     def clear(self):
         self.select.clear()

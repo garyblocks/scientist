@@ -1,8 +1,9 @@
 import tkinter as tk
+import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk # noqa
 from matplotlib.figure import Figure
 from matplotlib import style
-import matplotlib
+from pandas.plotting import radviz
 matplotlib.use("TkAgg")
 style.use("ggplot")
 
@@ -28,4 +29,8 @@ class Plot(tk.Frame):
 
     def clear(self):
         self.ax.clear()
+        self.canvas.draw()
+
+    def plot_radviz(self, df, cls):
+        radviz(df, cls, ax=self.ax)
         self.canvas.draw()
