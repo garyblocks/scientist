@@ -1,6 +1,6 @@
 import tkinter as tk
 import pandas as pd
-import numpy as np
+import pylab
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 from libs.plot import Plot
 from libs.button import Button
@@ -124,6 +124,7 @@ class HierarchyControlPane(tk.Frame):
 
         # run the clustering algorithm
         Button(self, "cluster", 1, 0, 6, lambda: self.hierarchy())
+        Button(self, "matrix", 1, 0, 6, lambda: self.plot_matrix())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -139,45 +140,37 @@ class HierarchyControlPane(tk.Frame):
         self.df[self.entry_col_name.get()] = pd.Series(
             clusters, index=self.df.index
         )
-        self.plot_dendro(Z)
+        self.X = X
+        self.Z = Z
+        self.plot_dendro()
 
-    def plot_dendro(self, Z):
+    def plot_dendro(self):
         # calculate full dendrogram# calcul
-        # self.plot.ax.title('Hierarchical Clustering Dendrogram')
-        # self.plot.ax.xlabel('sample index')
-        # self.plot.ax.ylabel('distance')
-        dendrogram(Z, leaf_rotation=90.,  # rotates the x axis labels
+        self.plot.ax.set_title('Hierarchical Clustering Dendrogram')
+        # plt.xlabel('sample index')
+        # plt.ylabel('distance')
+        dendrogram(self.Z, leaf_rotation=90.,  # rotates the x axis labels
                    ax=self.plot.ax)
         self.plot.canvas.draw()
 
-    def plot_2d_scatter(self, X, y):
-        # plot first two columns
-        colors, labels = [], []
-        C = set(y)
-        for ci in C:
-            label = "Class " + str(ci)
-            if X.shape[1] > 1:
-                col1, col2 = X[y == ci, 0], X[y == ci, 1]
-            else:
-                col1 = X[y == ci, 0]
-                col2 = np.zeros(col1.shape)
-            col = self.plot.ax.scatter(
-                col1, col2, label=label, alpha=0.5
-            )
-            colors.append(col)
-            labels.append(label)
-        self.plot.ax.set_title('clusters')
+    def plot_matrix(self):
+        fig = self.plot.fig
+        axdendro = fig.add_axes([0.09, 0.1, 0.2, 0.8])
+        dg = dendrogram(self.Z, orientation='left')
+        axdendro.set_xticks([])
+        axdendro.set_yticks([])
 
-        # make nice plotting
-        self.plot.ax.spines['top'].set_visible(False)
-        self.plot.ax.spines['right'].set_visible(False)
-        self.plot.ax.get_xaxis().tick_bottom()
-        self.plot.ax.get_yaxis().tick_left()
-        self.plot.ax.spines['left'].set_position(('outward', 10))
-        self.plot.ax.spines['bottom'].set_position(('outward', 10))
-        self.plot.ax.legend(
-            colors, labels, loc='best', labelspacing=0
-        )
+        # Plot distance matrix.
+        axmatrix = fig.add_axes([0.3, 0.1, 0.6, 0.8])
+        index = dg['leaves']
+        D = self.X[index, :]
+        im = axmatrix.matshow(D, aspect='auto', origin='lower')
+        axmatrix.set_xticks([])
+        axmatrix.set_yticks([])
+
+        # Plot colorbar.
+        axcolor = fig.add_axes([0.91, 0.1, 0.02, 0.8])
+        pylab.colorbar(im, cax=axcolor)
         self.plot.canvas.draw()
 
     def clear(self):
