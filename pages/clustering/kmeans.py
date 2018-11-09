@@ -148,5 +148,4 @@ class KmeansControlPane(tk.Frame):
 
     def clear(self):
         self.select.clear()
-        self.label_feats['text'] = 'features: no feature'
         self.plot.clear()

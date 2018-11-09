@@ -12,7 +12,10 @@ class Plot(tk.Frame):
 
     def __init__(self, master):
         tk.Frame.__init__(self, master)
+        self.init_fig()
+        self.tmp_axes = []
 
+    def init_fig(self):
         # create matplotlib plot
         self.fig = Figure(figsize=(5, 4), dpi=150)
         self.ax = self.fig.add_subplot(111)

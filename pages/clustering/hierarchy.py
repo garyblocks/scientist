@@ -49,6 +49,7 @@ class HierarchyControlPane(tk.Frame):
         self.plot = self.controller.plot
         self.select = None
         self.row = 0
+        self.axes = []
         self.init_frame()
 
     def reload(self):
@@ -155,8 +156,8 @@ class HierarchyControlPane(tk.Frame):
 
     def plot_matrix(self):
         fig = self.plot.fig
-        axdendro = fig.add_axes([0.09, 0.1, 0.2, 0.8])
-        dg = dendrogram(self.Z, orientation='left')
+        axdendro = fig.add_axes([0.1, 0.1, 0.2, 0.8])
+        dg = dendrogram(self.Z, orientation='left', ax=axdendro)
         axdendro.set_xticks([])
         axdendro.set_yticks([])
 
@@ -171,9 +172,11 @@ class HierarchyControlPane(tk.Frame):
         # Plot colorbar.
         axcolor = fig.add_axes([0.91, 0.1, 0.02, 0.8])
         pylab.colorbar(im, cax=axcolor)
+        self.axes = [axdendro, axmatrix, axcolor]
         self.plot.canvas.draw()
 
     def clear(self):
-        self.features = set()
-        self.label_feats['text'] = 'features: no feature'
+        self.select.clear()
         self.plot.clear()
+        for ax in self.axes:
+            ax.remove()
