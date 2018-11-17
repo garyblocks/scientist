@@ -1,12 +1,14 @@
 import tkinter as tk
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
 from libs.font import TITLE, LABEL
 from libs.button import Button
 from libs.select import Select
+from libs.table import Table
 
 
 class ClassificationBiclassPage(tk.Frame):
@@ -22,6 +24,7 @@ class ClassificationBiclassPage(tk.Frame):
         self.df = self.controller.DF
         self.ctrl_pane.df = self.df
         self.ctrl_pane.reload()
+        self.result_pane.reload()
 
     def init_frame(self):
         # split out left panel
@@ -140,14 +143,21 @@ class ClassificationControlPane(tk.Frame):
         test_precision = precision_score(self.y_test, y_test_pred)
         train_recall = recall_score(self.y_train, y_train_pred)
         test_recall = recall_score(self.y_test, y_test_pred)
+        train_f1 = f1_score(self.y_train, y_train_pred)
+        test_f1 = f1_score(self.y_test, y_test_pred)
+        # create metric table
+        data = [
+            [train_accuracy, test_accuracy],
+            [train_precision, test_precision],
+            [train_recall, test_recall],
+            [train_f1, test_f1]
+        ]
+        index = ['accuracy', 'precision', 'recall', 'f1']
+        metrics = pd.DataFrame(data, index, ['train', 'test'])
+        self.controller.result_pane.metric_df = metrics
+        self.controller.reload()
         train_conf_mx = confusion_matrix(self.y_train, y_train_pred)
         test_conf_mx = confusion_matrix(self.y_test, y_test_pred)
-        self.controller.result_pane.label_train_accuracy['text'] += str(train_accuracy)  # noqa
-        self.controller.result_pane.label_test_accuracy['text'] += str(test_accuracy)  # noqa
-        self.controller.result_pane.label_train_precision['text'] += str(train_precision)  # noqa
-        self.controller.result_pane.label_test_precision['text'] += str(test_precision)  # noqa
-        self.controller.result_pane.label_train_recall['text'] += str(train_recall)  # noqa
-        self.controller.result_pane.label_test_recall['text'] += str(test_recall)  # noqa
         self.controller.result_pane.label_train_conf_mx['text'] += str(train_conf_mx)  # noqa
         self.controller.result_pane.label_test_conf_mx['text'] += str(test_conf_mx)  # noqa
 
@@ -159,54 +169,32 @@ class ClassificationResultPane(tk.Frame):
         self.master = master
         self.controller = controller
         self.df = self.controller.df
+        self.metric_df = self.df
+        self.metric_table = None
         self.row = 0
         self.init_frame()
 
     def reload(self):
         self.row = 0
         self.df = self.controller.df
+        self.metric_table.destroy()
         self.init_frame()
 
     def init_frame(self):
-        # train
-        self.row += 1
-        label_train_accuracy = tk.Label(self, text="train accuracy: ",
-                                        font=LABEL, bg='#F3F3F3')
-        label_train_accuracy.grid(row=self.row, column=0, columnspan=3)
-        self.label_train_accuracy = label_train_accuracy
-        self.row += 1
-        label_train_precision = tk.Label(self, text="train precision: ",
-                                         font=LABEL, bg='#F3F3F3')
-        label_train_precision.grid(row=self.row, column=0, columnspan=3)
-        self.label_train_precision = label_train_precision
-        self.row += 1
-        label_train_recall = tk.Label(self, text="train recall: ",
-                                      font=LABEL, bg='#F3F3F3')
-        label_train_recall.grid(row=self.row, column=0, columnspan=3)
-        self.label_train_recall = label_train_recall
         self.row += 1
         label_train_conf_mx = tk.Label(self, text="train confusion matrix: ",
                                        font=LABEL, bg='#F3F3F3')
         label_train_conf_mx.grid(row=self.row, column=0, columnspan=3)
         self.label_train_conf_mx = label_train_conf_mx
-        # test
-        self.row += 1
-        label_test_accuracy = tk.Label(self, text="test accuracy: ",
-                                       font=LABEL, bg='#F3F3F3')
-        label_test_accuracy.grid(row=self.row, column=0, columnspan=3)
-        self.label_test_accuracy = label_test_accuracy
-        self.row += 1
-        label_test_precision = tk.Label(self, text="test precision: ",
-                                        font=LABEL, bg='#F3F3F3')
-        label_test_precision.grid(row=self.row, column=0, columnspan=3)
-        self.label_test_precision = label_test_precision
-        self.row += 1
-        label_test_recall = tk.Label(self, text="test recall: ",
-                                     font=LABEL, bg='#F3F3F3')
-        label_test_recall.grid(row=self.row, column=0, columnspan=3)
-        self.label_test_recall = label_test_recall
         self.row += 1
         label_test_conf_mx = tk.Label(self, text="test confusion matrix: ",
                                       font=LABEL, bg='#F3F3F3')
         label_test_conf_mx.grid(row=self.row, column=0, columnspan=3)
         self.label_test_conf_mx = label_test_conf_mx
+        self.row += 1
+        label_test_conf_mx = tk.Label(self, text="test confusion matrix: ",
+                                      font=LABEL, bg='#F3F3F3')
+        label_test_conf_mx.grid(row=self.row, column=0, columnspan=3)
+        self.label_test_conf_mx = label_test_conf_mx
+        self.metric_table = Table(self, self.metric_df, width=500)
+        self.metric_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
