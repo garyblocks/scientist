@@ -2,6 +2,7 @@ import tkinter as tk
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 from libs.font import TITLE, LABEL
 from libs.button import Button
@@ -88,7 +89,7 @@ class ClassificationControlPane(tk.Frame):
         label_algo.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         chosen_algo = tk.StringVar(self)
-        algos = ['kNN', 'Naive Bayes']
+        algos = ['kNN', 'Naive Bayes', 'Decision Tree']
         chosen_algo.set(algos[0])
         algo_menu = tk.OptionMenu(self, chosen_algo, *algos)
         algo_menu.config(bg="#F3F3F3")
@@ -101,7 +102,8 @@ class ClassificationControlPane(tk.Frame):
                                font=LABEL, bg='#F3F3F3')
         label_sec_1.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
-        entry_split_rate = tk.Entry(self)
+        entry_split_rate = tk.Scale(self, from_=0, to=1, orient=tk.HORIZONTAL, resolution=0.1, bg='#F3F3F3')
+        # entry_split_rate = tk.Entry(self)
         entry_split_rate.grid(row=self.row, column=0, columnspan=6)
         self.split_rate = entry_split_rate
         Button(self, "classify", 1, 0, 6, lambda: self.run())
@@ -123,6 +125,8 @@ class ClassificationControlPane(tk.Frame):
             self.model = KNeighborsClassifier()
         elif algo == 'Naive Bayes':
             self.model = BernoulliNB()
+        elif algo == 'Decision Tree':
+            self.model = DecisionTreeClassifier()
         self.model.fit(self.X_train, self.y_train)
         self.evaluate()
 
