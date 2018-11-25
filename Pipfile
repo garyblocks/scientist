@@ -12,6 +12,7 @@ pandas = "==0.22.0"
 pandastable = "*"
 ipython = "*"
 seaborn = "*"
+statsmodels = "*"
 
 [requires]
 python_version = "3.6"

@@ -1,8 +1,7 @@
 import tkinter as tk
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from scipy import stats
+import statsmodels.api as sm
 from libs.table import Table
 from libs.font import TITLE, LABEL
 from libs.button import Button
@@ -96,31 +95,31 @@ class RegressionControlPane(tk.Frame):
         feat_list = list(self.select.tags)
         self.X = self.df[feat_list].values
         self.y = self.df[self.chose_cls.get()].values
-        self.model = LinearRegression()
-        self.model.fit(self.X, self.y)
-        self.evaluate()
+        self.model = sm.OLS(self.y, sm.add_constant(self.X))
+        results = self.model.fit()
+        self.evaluate(results)
 
-    def evaluate(self):
-        coefs = np.append(self.model.intercept_, self.model.coef_)
-        predictions = self.model.predict(self.X)
+    def evaluate(self, results):
+        coefs = results.params
+        sde = results.bse
+        t_values = results.tvalues
+        p_values = results.pvalues
+        conf_int = results.conf_int().T
+        cfi_low = conf_int[0]
+        cfi_high = conf_int[1]
 
-        newX = np.append(np.ones((len(self.X), 1)), self.X, axis=1)
-        MSE = (sum((self.y-predictions)**2))/(len(newX)-len(newX[0]))
-
-        var = MSE*(np.linalg.inv(np.dot(newX.T, newX)).diagonal())
-        sde = np.sqrt(var)
-        ts = coefs / sde
-        p_values = [2*(1-stats.t.cdf(np.abs(i), (len(newX)-1))) for i in ts]
-
-        data = {
-            'Features': np.array(['Intercept'] + list(self.select.tags)),
-            'Coefficients': np.round(coefs, 4),
-            'Standard Errors': np.round(sde, 4),
-            'T Values': np.round(ts, 4),
-            'P Values': np.round(p_values, 4)
-        }
-
-        result = pd.DataFrame(data)
+        data = np.vstack((
+            np.array(['Intercept'] + list(self.select.tags)),
+            np.round(coefs, 4),
+            np.round(sde, 4),
+            np.round(t_values, 4),
+            np.round(p_values, 4),
+            np.round(cfi_low, 4),
+            np.round(cfi_high, 4)
+        ))
+        print(data.T)
+        columns = ['Features', 'Coefficients', 'Std Errors', 'T Values', 'P Values', '[0.025', '0.975]']
+        result = pd.DataFrame(data=data.T, columns=columns)
         self.controller.result_pane.result = result
         self.controller.reload()
 
