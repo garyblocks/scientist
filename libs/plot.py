@@ -1,5 +1,6 @@
 import tkinter as tk
 import matplotlib
+import pylab
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk # noqa
 from matplotlib.figure import Figure
 from matplotlib import style
@@ -33,6 +34,12 @@ class Plot(tk.Frame):
     def clear(self):
         self.ax.clear()
         self.canvas.draw()
+
+    def add_color_bar(self, mappable=None):
+        if not mappable:
+            mappable = self.ax
+        cax = self.fig.add_axes([0.91, 0.1, 0.02, 0.8])
+        pylab.colorbar(ax=self.ax, cax=cax, mappable=mappable)
 
     def plot_radviz(self, df, cls):
         radviz(df, cls, ax=self.ax)

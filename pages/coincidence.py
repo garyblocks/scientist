@@ -3,9 +3,11 @@ import numpy as np
 import math
 from collections import Counter
 from scipy.stats import hypergeom
+import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from libs.plot import Plot
 from libs.font import TITLE, SECTION, LABEL
+from libs.button import Button
 
 
 class AnalysisCoincidencePage(tk.Frame):
@@ -47,66 +49,53 @@ class CoincidenceControlPane(tk.Frame):
         self.df = self.controller.df
         self.plot = self.controller.plot
         self.init_frame()
+        self.row = 0
 
     def reload(self):
         self.init_frame()
 
     def init_frame(self):
         # title
-        row = 0
+        self.row = 0
         text = tk.Label(
             self, text="Coincidence", font=TITLE, bg='#F3F3F3', width=25)
-        text.grid(row=row, column=0, columnspan=3)
+        text.grid(row=self.row, column=0, columnspan=3)
 
         # settings
-        row += 1
+        self.row += 1
         label_set = tk.Label(self, text="Settings", font=SECTION, bg='#F3F3F3')
-        label_set.grid(row=row, column=0, columnspan=3)
+        label_set.grid(row=self.row, column=0, columnspan=3)
 
         # select two feature
         choices = self.df.columns.values.tolist()
         if not choices:
             choices = ['']
-        row += 1
+        self.row += 1
         label_feat_1 = tk.Label(
             self, text="select feature 1", font=LABEL, bg='#F3F3F3')
-        label_feat_1.grid(row=row, column=0, columnspan=1)
+        label_feat_1.grid(row=self.row, column=0, columnspan=1)
         chosen_1 = tk.StringVar(self)
         chosen_1.set(choices[0] if choices else '')
         feat_1 = tk.OptionMenu(self, chosen_1, *choices)
-        feat_1.grid(row=row, column=1, columnspan=2)
+        feat_1.config(bg="#F3F3F3")
+        feat_1.grid(row=self.row, column=1, columnspan=2)
         self.feat_1 = chosen_1
-        row += 1
+        self.row += 1
         label_feat_2 = tk.Label(
             self, text="select feature 2", font=LABEL, bg='#F3F3F3')
-        label_feat_2.grid(row=row, column=0, columnspan=1)
+        label_feat_2.grid(row=self.row, column=0, columnspan=1)
         chosen_2 = tk.StringVar(self)
         chosen_2.set(choices[0] if choices else '')
         feat_2 = tk.OptionMenu(self, chosen_2, *choices)
-        feat_2.grid(row=row, column=1, columnspan=2)
+        feat_2.config(bg="#F3F3F3")
+        feat_2.grid(row=self.row, column=1, columnspan=2)
         self.feat_2 = chosen_2
 
         # run the coincidence algorithm
-        row += 1
-        btn_coin = tk.Button(
-            self,
-            text="coincidence",
-            bg='#F3F3F3',
-            padx=15,
-            pady=10,
-            command=lambda: self.coincidence())
-        btn_coin.grid(row=row, column=0, columnspan=3, padx=10, pady=10)
+        Button(self, "coincidence", 1, 0, 6, lambda: self.coincidence())
 
         # clear plot
-        row += 1
-        btn_clear = tk.Button(
-            self,
-            text="clear",
-            bg='#F3F3F3',
-            padx=15,
-            pady=10,
-            command=lambda: self.clear())
-        btn_clear.grid(row=row, column=0, columnspan=3, padx=10, pady=10)
+        Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
     def coincidence(self):
         feature1 = self.feat_1.get()
@@ -152,6 +141,10 @@ class CoincidenceControlPane(tk.Frame):
         ax.set_yticklabels(yticklabels)
         ax.set_xlabel(name1)
         ax.set_ylabel(name2)
+        # create a mappable
+        color_bar = plt.cm.ScalarMappable(cmap="autumn", norm=plt.Normalize(vmin=0, vmax=1))
+        color_bar._A = []
+        self.plot.add_color_bar(color_bar)
         self.plot.canvas.draw()
 
     @staticmethod
