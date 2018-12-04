@@ -32,8 +32,10 @@ class Plot(tk.Frame):
         self.toolbar = toolbar
 
     def clear(self):
-        self.ax.clear()
+        self.fig.clf()
+        self.ax = self.fig.add_subplot(111)
         self.canvas.draw()
+        self.toolbar.update()
 
     def add_color_bar(self, mappable=None):
         if not mappable:
