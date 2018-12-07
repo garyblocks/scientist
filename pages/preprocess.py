@@ -2,7 +2,7 @@ import tkinter as tk
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, LabelBinarizer
 from libs.table import Table
-from libs.font import SECTION, LABEL
+from libs.font import SECTION, LABEL, TITLE
 from libs.button import Button
 from libs.select import Select
 
@@ -59,6 +59,12 @@ class PrepControlPane(tk.Frame):
         self.init_frame()
 
     def init_frame(self):
+        self.row += 1
+        label_title = tk.Label(
+            self, text="Preprocess",
+            font=TITLE, bg='#F3F3F3'
+        )
+        label_title.grid(row=self.row, column=0, columnspan=6)
         # select feature
         select = Select(self, self.df.columns.values.tolist())
         select.grid(row=self.row, column=0, columnspan=6)
@@ -81,20 +87,11 @@ class PrepControlPane(tk.Frame):
         label_enc = tk.Label(self, text="encoder", font=SECTION, bg='#F3F3F3')
         label_enc.grid(row=self.row, column=0, columnspan=6)
         # encode categorical feature to integers
-        Button(self, "label encoder", 1, 0, 3, lambda: self.label_encoder())
+        Button(self, "label", 1, 0, 2, lambda: self.label_encoder())
         # one hot encoder
-        Button(self, "k hot encoder", 0, 3, 3, lambda: self.one_hot())
+        Button(self, "k hot", 0, 2, 2, lambda: self.one_hot())
         # encode by quantile
-        self.row += 1
-        label_index = tk.Label(
-            self, text="num of quantiles:",
-            font=LABEL, bg='#F3F3F3'
-        )
-        label_index.grid(row=self.row, column=0, columnspan=3)
-        entry_nq = tk.Entry(self, highlightbackground='#F3F3F3')
-        entry_nq.grid(row=self.row, column=3, columnspan=2)
-        self.entry_nq = entry_nq
-        Button(self, "quantile encoder", 1, 0, 6, lambda: self.q_encoder())
+        Button(self, "quantile", 0, 4, 2, lambda: self.pop_up())
 
         # drop
         self.row += 1
@@ -111,11 +108,11 @@ class PrepControlPane(tk.Frame):
             self, text="index:",
             font=LABEL, bg='#F3F3F3'
         )
-        label_index.grid(row=self.row, column=0, columnspan=3)
-        entry_index = tk.Entry(self, highlightbackground='#F3F3F3')
-        entry_index.grid(row=self.row, column=3, columnspan=2)
+        label_index.grid(row=self.row, column=0, columnspan=2)
+        entry_index = tk.Entry(self, highlightbackground='#F3F3F3', width=5)
+        entry_index.grid(row=self.row, column=2, columnspan=2)
         self.entry_index = entry_index
-        Button(self, "drop subjects", 1, 0, 6, lambda: self.drop_index())
+        Button(self, "drop subjects", 0, 4, 2, lambda: self.drop_index())
 
         # sample rows
         self.row += 1
@@ -127,11 +124,11 @@ class PrepControlPane(tk.Frame):
         self.row += 1
         label_nrow = tk.Label(self, text="num of rows:",
                               font=LABEL, bg='#F3F3F3')
-        label_nrow.grid(row=self.row, column=0, columnspan=3)
-        entry_nrow = tk.Entry(self, highlightbackground='#F3F3F3')
-        entry_nrow.grid(row=self.row, column=3, columnspan=2)
+        label_nrow.grid(row=self.row, column=0, columnspan=2)
+        entry_nrow = tk.Entry(self, highlightbackground='#F3F3F3', width=5)
+        entry_nrow.grid(row=self.row, column=2, columnspan=2)
         self.entry_nrow = entry_nrow
-        Button(self, "sample", 1, 0, 6, lambda: self.sample())
+        Button(self, "sample", 0, 4, 2, lambda: self.sample())
 
         # deal with missing value
         self.row += 1
@@ -172,6 +169,7 @@ class PrepControlPane(tk.Frame):
             new_col_name = f + '_quantile'
             df[new_col_name] = pd.qcut(df[f], n, labels=False)
             df[new_col_name].astype('int32')
+        self.pop_up_win.destroy()
         self.controller.reload()
 
     def one_hot(self):
@@ -214,3 +212,21 @@ class PrepControlPane(tk.Frame):
     def fill_median(self):
         self.df.fillna(self.df.median(), inplace=True)
         self.controller.reload()
+
+    def pop_up(self):
+        pop_up_win = tk.Toplevel()
+        pop_up_win.wm_title("Window")
+
+        label = tk.Label(
+            pop_up_win, text="number of quantiles:",
+            font=LABEL, bg='#F3F3F3'
+        )
+        label.grid(row=0, column=0)
+        entry_nq = tk.Entry(pop_up_win, highlightbackground='#F3F3F3', width=10)
+        entry_nq.grid(row=1, column=0)
+        self.entry_nq = entry_nq
+
+        btn = tk.Button(pop_up_win, text="Encode", command=self.q_encoder)
+        btn.grid(row=2, column=0)
+
+        self.pop_up_win = pop_up_win

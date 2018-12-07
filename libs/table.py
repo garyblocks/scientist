@@ -1,5 +1,6 @@
 import tkinter as tk
 import numpy as np
+import pandas as pd
 import decimal
 BOLD = 'Helvetica 14 bold'
 FONT = 'Helvetica 14'
@@ -73,13 +74,18 @@ class InnerTable(tk.Frame):
                 ) and decimal.Decimal(number).as_tuple().exponent < -4:
                     # round number to 4 decimal places
                     number = str(round(float(number), 4))
+                # change color for nan value
+                if pd.isnull(data[i-1, j-1]):
+                    cur_bg_color = '#E83015'
+                else:
+                    cur_bg_color = bg_color
 
                 cell = tk.Label(
                     self,
                     height=2,
                     padx=3,
                     text=number,
-                    bg=bg_color,
+                    bg=cur_bg_color,
                     font=FONT
                 )
                 cell.grid(row=i, column=j)
