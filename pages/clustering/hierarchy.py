@@ -1,7 +1,9 @@
 import tkinter as tk
 import pandas as pd
 import pylab
+import matplotlib
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+from sklearn.manifold import TSNE
 from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
@@ -125,7 +127,10 @@ class HierarchyControlPane(tk.Frame):
 
         # run the clustering algorithm
         Button(self, "cluster", 1, 0, 6, lambda: self.hierarchy())
-        Button(self, "matrix", 1, 0, 6, lambda: self.plot_matrix())
+        # plot the clusters
+        Button(self, "matrix", 1, 0, 2, lambda: self.plot_matrix())
+        Button(self, "t-SNE", 0, 2, 2, lambda: self.plot_tsne())
+        Button(self, "radviz", 0, 4, 2, lambda: self.plot_radvis())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -146,18 +151,24 @@ class HierarchyControlPane(tk.Frame):
         self.plot_dendro()
 
     def plot_dendro(self):
+        self.plot.clear()
         # calculate full dendrogram# calcul
         self.plot.ax.set_title('Hierarchical Clustering Dendrogram')
         # plt.xlabel('sample index')
         # plt.ylabel('distance')
+        matplotlib.rcParams['lines.linewidth'] = 0.5
         dendrogram(self.Z, leaf_rotation=90.,  # rotates the x axis labels
                    ax=self.plot.ax)
+        matplotlib.rcParams['lines.linewidth'] = 1.5
         self.plot.canvas.draw()
 
     def plot_matrix(self):
+        self.plot.clear()
         fig = self.plot.fig
         axdendro = fig.add_axes([0.1, 0.1, 0.2, 0.8])
+        matplotlib.rcParams['lines.linewidth'] = 0.3
         dg = dendrogram(self.Z, orientation='left', ax=axdendro)
+        matplotlib.rcParams['lines.linewidth'] = 1.5
         axdendro.set_xticks([])
         axdendro.set_yticks([])
 
@@ -174,6 +185,22 @@ class HierarchyControlPane(tk.Frame):
         pylab.colorbar(im, cax=axcolor)
         self.axes = [axdendro, axmatrix, axcolor]
         self.plot.canvas.draw()
+
+    def plot_radvis(self):
+        cls = self.entry_col_name.get()
+        feat_list = list(self.select.tags) + [cls]
+        tmp = self.df[feat_list]
+        self.plot.clear()
+        self.plot.plot_radviz(tmp, cls)
+
+    def plot_tsne(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        X_embedded = TSNE().fit_transform(X)
+        self.plot.clear()
+        self.plot.plot_2d_scatter(X_embedded, y)
 
     def clear(self):
         self.select.clear()
