@@ -1,6 +1,6 @@
 import tkinter as tk
 import pandas as pd
-import numpy as np
+from sklearn.manifold import TSNE
 from sklearn.cluster import MiniBatchKMeans
 from libs.plot import Plot
 from libs.button import Button
@@ -80,7 +80,7 @@ class KmeansControlPane(tk.Frame):
         # set name of columns
         self.row += 1
         label_set_col_name = tk.Label(
-            self, text="name of column",
+            self, text="name of the new column",
             font=LABEL, bg='#F3F3F3'
         )
         label_set_col_name.grid(row=self.row, column=0, columnspan=3)
@@ -90,8 +90,9 @@ class KmeansControlPane(tk.Frame):
 
         # run the clustering algorithm
         Button(self, "cluster", 1, 0, 6, lambda: self.kmeans())
-        # run the clustering algorithm
-        Button(self, "radviz", 1, 0, 6, lambda: self.plot_radvis())
+        # plot the clusters
+        Button(self, "t-SNE", 1, 0, 3, lambda: self.plot_tsne())
+        Button(self, "radviz", 0, 3, 3, lambda: self.plot_radvis())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -107,37 +108,8 @@ class KmeansControlPane(tk.Frame):
         self.df[self.entry_col_name.get()] = pd.Series(
             model.labels_, index=self.df.index
         )
-        self.plot_2d_scatter(X[:, :2], model.labels_)
-
-    def plot_2d_scatter(self, X, y):
-        # plot first two columns
-        colors, labels = [], []
-        C = set(y)
-        for ci in C:
-            label = "Class " + str(ci)
-            if X.shape[1] > 1:
-                col1, col2 = X[y == ci, 0], X[y == ci, 1]
-            else:
-                col1 = X[y == ci, 0]
-                col2 = np.zeros(col1.shape)
-            col = self.plot.ax.scatter(
-                col1, col2, label=label, alpha=0.5
-            )
-            colors.append(col)
-            labels.append(label)
-        self.plot.ax.set_title('clusters')
-
-        # make nice plotting
-        self.plot.ax.spines['top'].set_visible(False)
-        self.plot.ax.spines['right'].set_visible(False)
-        self.plot.ax.get_xaxis().tick_bottom()
-        self.plot.ax.get_yaxis().tick_left()
-        self.plot.ax.spines['left'].set_position(('outward', 10))
-        self.plot.ax.spines['bottom'].set_position(('outward', 10))
-        self.plot.ax.legend(
-            colors, labels, loc='best', labelspacing=0
-        )
-        self.plot.canvas.draw()
+        # default is plotting first features
+        self.plot.plot_2d_scatter(X[:, :2], model.labels_)
 
     def plot_radvis(self):
         cls = self.entry_col_name.get()
@@ -145,6 +117,15 @@ class KmeansControlPane(tk.Frame):
         tmp = self.df[feat_list]
         self.plot.clear()
         self.plot.plot_radviz(tmp, cls)
+
+    def plot_tsne(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        X_embedded = TSNE().fit_transform(X)
+        self.plot.clear()
+        self.plot.plot_2d_scatter(X_embedded, y)
 
     def clear(self):
         self.select.clear()
