@@ -1,5 +1,6 @@
 import tkinter as tk
-from sklearn.model_selection import train_test_split
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.tree import DecisionTreeClassifier
@@ -7,6 +8,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from libs.font import TITLE, LABEL
 from libs.button import Button
 from libs.select import Select
+from libs.table import Table
 
 
 class ClassificationMulticlassPage(tk.Frame):
@@ -22,6 +24,7 @@ class ClassificationMulticlassPage(tk.Frame):
         self.df = self.controller.DF
         self.ctrl_pane.df = self.df
         self.ctrl_pane.reload()
+        self.result_pane.reload()
 
     def init_frame(self):
         # split out left panel
@@ -98,14 +101,24 @@ class ClassificationControlPane(tk.Frame):
 
         # train test split
         self.row += 1
-        label_sec_1 = tk.Label(self, text="train-test split ratio",
+        label_sec_1 = tk.Label(self, text="hold out ratio",
                                font=LABEL, bg='#F3F3F3')
         label_sec_1.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         entry_split_rate = tk.Scale(self, from_=0, to=1, orient=tk.HORIZONTAL, resolution=0.1, bg='#F3F3F3')
-        # entry_split_rate = tk.Entry(self)
         entry_split_rate.grid(row=self.row, column=0, columnspan=6)
         self.split_rate = entry_split_rate
+
+        # cross validation
+        self.row += 1
+        label_sec_2 = tk.Label(self, text="CV folds",
+                               font=LABEL, bg='#F3F3F3')
+        label_sec_2.grid(row=self.row, column=0, columnspan=6)
+        self.row += 1
+        entry_cv_k = tk.Scale(self, from_=1, to=10, orient=tk.HORIZONTAL, resolution=1, bg='#F3F3F3')
+        entry_cv_k.grid(row=self.row, column=0, columnspan=6)
+        self.cv_k = entry_cv_k
+
         Button(self, "classify", 1, 0, 6, lambda: self.run())
 
         # default sizes
@@ -127,7 +140,6 @@ class ClassificationControlPane(tk.Frame):
             self.model = BernoulliNB()
         elif algo == 'Decision Tree':
             self.model = DecisionTreeClassifier()
-        self.model.fit(self.X_train, self.y_train)
         self.evaluate()
 
     def hold_out(self):
@@ -135,16 +147,20 @@ class ClassificationControlPane(tk.Frame):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=r, random_state=101)  # noqa
 
     def evaluate(self):
-        y_train_pred = self.model.predict(self.X_train)
+        # apply cross validation for training
+        k = int(self.cv_k.get())
+        y_train_pred = cross_val_predict(self.model, self.X_train, self.y_train, cv=k)
+        self.model.fit(self.X_train, self.y_train)
         y_test_pred = self.model.predict(self.X_test)
         train_accuracy = accuracy_score(self.y_train, y_train_pred)
         test_accuracy = accuracy_score(self.y_test, y_test_pred)
+        # create confusion matrix
+        self.controller.result_pane.train_conf_df = pd.DataFrame(confusion_matrix(self.y_train, y_train_pred))
+        self.controller.result_pane.test_conf_df = pd.DataFrame(confusion_matrix(self.y_test, y_test_pred))
+        self.controller.reload()
+        # update accuracy score
         self.controller.result_pane.label_train_accuracy['text'] += str(train_accuracy)  # noqa
         self.controller.result_pane.label_test_accuracy['text'] += str(test_accuracy)  # noqa
-        train_conf_mx = confusion_matrix(self.y_train, y_train_pred)
-        test_conf_mx = confusion_matrix(self.y_test, y_test_pred)
-        self.controller.result_pane.label_train_conf_mx['text'] += str(train_conf_mx)  # noqa
-        self.controller.result_pane.label_test_conf_mx['text'] += str(test_conf_mx)  # noqa
 
 
 class ClassificationResultPane(tk.Frame):
@@ -154,6 +170,10 @@ class ClassificationResultPane(tk.Frame):
         self.master = master
         self.controller = controller
         self.df = self.controller.df
+        self.train_conf_df = self.df
+        self.train_conf_mx = None
+        self.test_conf_df = self.df
+        self.test_conf_mx = None
         self.row = 0
         self.init_frame()
 
@@ -173,7 +193,10 @@ class ClassificationResultPane(tk.Frame):
         label_train_conf_mx = tk.Label(self, text="train confusion matrix: ",
                                        font=LABEL, bg='#F3F3F3')
         label_train_conf_mx.grid(row=self.row, column=0, columnspan=3)
-        self.label_train_conf_mx = label_train_conf_mx
+        self.row += 1
+        self.train_conf_mx = Table(self, self.train_conf_df, width=500)
+        self.train_conf_mx.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+
         # test
         self.row += 1
         label_test_accuracy = tk.Label(self, text="test accuracy: ",
@@ -184,4 +207,6 @@ class ClassificationResultPane(tk.Frame):
         label_test_conf_mx = tk.Label(self, text="test confusion matrix: ",
                                       font=LABEL, bg='#F3F3F3')
         label_test_conf_mx.grid(row=self.row, column=0, columnspan=3)
-        self.label_test_conf_mx = label_test_conf_mx
+        self.row += 1
+        self.test_conf_mx = Table(self, self.test_conf_df, width=500)
+        self.test_conf_mx.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
