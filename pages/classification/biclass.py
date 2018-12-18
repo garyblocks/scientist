@@ -2,7 +2,7 @@ import tkinter as tk
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
 from libs.font import TITLE, LABEL
@@ -92,7 +92,7 @@ class ClassificationControlPane(tk.Frame):
         label_algo.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         chosen_algo = tk.StringVar(self)
-        algos = ['kNN', 'SGD']
+        algos = ['kNN', 'SGD', 'Logistic']
         chosen_algo.set(algos[0])
         algo_menu = tk.OptionMenu(self, chosen_algo, *algos)
         algo_menu.config(bg="#F3F3F3")
@@ -127,6 +127,8 @@ class ClassificationControlPane(tk.Frame):
             self.model = KNeighborsClassifier()
         elif algo == 'SGD':
             self.model = SGDClassifier(random_state=101)
+        elif algo == 'Logistic':
+            self.model = LogisticRegression(C=1., solver='lbfgs')
         self.model.fit(self.X_train, self.y_train)
         self.evaluate()
 
@@ -155,11 +157,10 @@ class ClassificationControlPane(tk.Frame):
         index = ['accuracy', 'precision', 'recall', 'f1']
         metrics = pd.DataFrame(data, index, ['train', 'test'])
         self.controller.result_pane.metric_df = metrics
+        # create confusion matrix
+        self.controller.result_pane.train_conf_df = pd.DataFrame(confusion_matrix(self.y_train, y_train_pred))
+        self.controller.result_pane.test_conf_df = pd.DataFrame(confusion_matrix(self.y_test, y_test_pred))
         self.controller.reload()
-        train_conf_mx = confusion_matrix(self.y_train, y_train_pred)
-        test_conf_mx = confusion_matrix(self.y_test, y_test_pred)
-        self.controller.result_pane.label_train_conf_mx['text'] += str(train_conf_mx)  # noqa
-        self.controller.result_pane.label_test_conf_mx['text'] += str(test_conf_mx)  # noqa
 
 
 class ClassificationResultPane(tk.Frame):
@@ -171,6 +172,10 @@ class ClassificationResultPane(tk.Frame):
         self.df = self.controller.df
         self.metric_df = self.df
         self.metric_table = None
+        self.train_conf_df = self.df
+        self.train_conf_mx = None
+        self.test_conf_df = self.df
+        self.test_conf_mx = None
         self.row = 0
         self.init_frame()
 
@@ -181,20 +186,11 @@ class ClassificationResultPane(tk.Frame):
         self.init_frame()
 
     def init_frame(self):
-        self.row += 1
-        label_train_conf_mx = tk.Label(self, text="train confusion matrix: ",
-                                       font=LABEL, bg='#F3F3F3')
-        label_train_conf_mx.grid(row=self.row, column=0, columnspan=3)
-        self.label_train_conf_mx = label_train_conf_mx
-        self.row += 1
-        label_test_conf_mx = tk.Label(self, text="test confusion matrix: ",
-                                      font=LABEL, bg='#F3F3F3')
-        label_test_conf_mx.grid(row=self.row, column=0, columnspan=3)
-        self.label_test_conf_mx = label_test_conf_mx
-        self.row += 1
-        label_test_conf_mx = tk.Label(self, text="test confusion matrix: ",
-                                      font=LABEL, bg='#F3F3F3')
-        label_test_conf_mx.grid(row=self.row, column=0, columnspan=3)
-        self.label_test_conf_mx = label_test_conf_mx
         self.metric_table = Table(self, self.metric_df, width=500)
         self.metric_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.row += 1
+        self.train_conf_mx = Table(self, self.train_conf_df, width=500)
+        self.train_conf_mx.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.row += 1
+        self.test_conf_mx = Table(self, self.test_conf_df, width=500)
+        self.test_conf_mx.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
