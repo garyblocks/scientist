@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from libs.table import Table
-from libs.font import TITLE, LABEL
+from libs.font import TITLE, SECTION, LABEL
 from libs.button import Button
 from libs.select import Select
 
@@ -100,6 +100,13 @@ class RegressionControlPane(tk.Frame):
         self.evaluate(results)
 
     def evaluate(self, results):
+        stat_df = self.get_statistics(results)
+        coef_df = self.get_coefficients(results)
+        self.controller.result_pane.stat_df = stat_df
+        self.controller.result_pane.coef_df = coef_df
+        self.controller.reload()
+
+    def get_coefficients(self, results):
         coefs = results.params
         sde = results.bse
         t_values = results.tvalues
@@ -113,15 +120,23 @@ class RegressionControlPane(tk.Frame):
             np.round(coefs, 4),
             np.round(sde, 4),
             np.round(t_values, 4),
-            np.round(p_values, 4),
+            p_values,
+            # np.round(p_values, 4),
             np.round(cfi_low, 4),
             np.round(cfi_high, 4)
         ))
-        print(data.T)
         columns = ['Features', 'Coefficients', 'Std Errors', 'T Values', 'P Values', '[0.025', '0.975]']
-        result = pd.DataFrame(data=data.T, columns=columns)
-        self.controller.result_pane.result = result
-        self.controller.reload()
+        return pd.DataFrame(data=data.T, columns=columns)
+
+    def get_statistics(self, results):
+        stat_names = ['R-squared', 'Adj. R-squared']
+        values = [
+            np.round(results.rsquared, 4),
+            np.round(results.rsquared_adj, 4)
+        ]
+        data = np.vstack((np.array(stat_names), np.array(values)))
+        columns = ['Stats', 'Values']
+        return pd.DataFrame(data=data.T, columns=columns)
 
 
 class RegressionResultPane(tk.Frame):
@@ -131,17 +146,32 @@ class RegressionResultPane(tk.Frame):
         self.master = master
         self.controller = controller
         self.df = self.controller.df
-        self.result = self.df  # for initialize
-        self.table = None
+        self.coef_df = self.df  # for initialize
+        self.stat_df = self.df  # for initialize
+        self.coef_table = None
+        self.stat_table = None
         self.row = 0
         self.init_frame()
 
     def reload(self):
         self.row = 0
         self.df = self.controller.df
-        self.table.destroy()
+        self.coef_table.destroy()
+        self.stat_table.destroy()
         self.init_frame()
 
     def init_frame(self):
-        self.table = Table(self, self.result, width=500)
-        self.table.pack(fill="both", expand=True)
+        # model statistics
+        stat_label = tk.Label(self, text="Model Statistics", font=SECTION, bg='#F3F3F3')
+        stat_label.grid(row=self.row)
+        self.row += 1
+        self.stat_table = Table(self, self.stat_df, width=500)
+        self.stat_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+
+        # coefficients
+        self.row += 1
+        coef_label = tk.Label(self, text="Model Coefficients", font=SECTION, bg='#F3F3F3')
+        coef_label.grid(row=self.row)
+        self.row += 1
+        self.coef_table = Table(self, self.coef_df, width=500)
+        self.coef_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
