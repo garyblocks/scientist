@@ -144,7 +144,7 @@ class CoincidenceControlPane(tk.Frame):
         # create a mappable
         color_bar = plt.cm.ScalarMappable(cmap="autumn", norm=plt.Normalize(vmin=0, vmax=1))
         color_bar._A = []
-        self.plot.add_color_bar(color_bar)
+        self.plot.add_color_bar(color_bar, "scaled pvalues(-log)")
         self.plot.canvas.draw()
 
     @staticmethod

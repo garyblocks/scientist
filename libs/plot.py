@@ -38,11 +38,13 @@ class Plot(tk.Frame):
         self.canvas.draw()
         self.toolbar.update()
 
-    def add_color_bar(self, mappable=None):
+    def add_color_bar(self, mappable=None, label=""):
         if not mappable:
             mappable = self.ax
-        cax = self.fig.add_axes([0.91, 0.1, 0.02, 0.8])
-        pylab.colorbar(ax=self.ax, cax=cax, mappable=mappable)
+        cax = self.fig.add_axes([0.91, 0.11, 0.02, 0.77])
+        cbar = pylab.colorbar(ax=self.ax, cax=cax, mappable=mappable)
+        cbar.ax.tick_params(labelsize=5, pad=-2)
+        cbar.set_label(label, rotation=270, labelpad=4, size=8)
 
     def plot_radviz(self, df, cls):
         radviz(df, cls, ax=self.ax)
