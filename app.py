@@ -2,7 +2,7 @@ import tkinter as tk
 import pandas as pd
 from tkinter import filedialog
 # internal
-from libs.font import LABEL
+from pages.start import StartPage
 from pages.preprocess import DataPreprocessPage
 from pages.view import DataViewPage
 from pages.clustering.kmeans import ClusteringKmeansPage
@@ -129,7 +129,7 @@ class Scientist(tk.Tk):
             title="Save file",
             defaultextension=".csv"
         )
-        self.DF.to_csv(filename)
+        self.DF.to_csv(filename, index=False)
 
     def select_file(self):
         filename = filedialog.askopenfilename(
@@ -173,29 +173,6 @@ class Scientist(tk.Tk):
     def analysis_coincidence(self):
         self.frames[AnalysisCoincidencePage].reload()
         self.show_frame(AnalysisCoincidencePage)
-
-
-class StartPage(tk.Frame):
-
-    def __init__(self, master, controller):
-        tk.Frame.__init__(self, master)
-        self.master = master
-        self.controller = controller
-        self.init_frame()
-
-    def init_frame(self):
-        label = tk.Label(
-            self,
-            text='There is no dataframe yet, please import one',
-            font=LABEL
-        )
-        label.pack(pady=10, padx=10)
-        import_csv_btn = tk.Button(
-            self,
-            text="Import CSV",
-            command=self.controller.import_csv
-        )
-        import_csv_btn.pack()
 
 
 app = Scientist()
