@@ -99,8 +99,10 @@ class ViewControlPane(tk.Frame):
         Button(self, "line chart", 0, 4, 2, lambda: self.plot_line())
         # box plot
         Button(self, "box", 1, 0, 2, lambda: self.plot_box())
+        # bar plot
+        Button(self, "bar", 0, 2, 2, lambda: self.plot_bar())
         # scatter matrix
-        Button(self, "scatter matrix", 0, 2, 4, lambda: self.plot_scatter_matrix())
+        Button(self, "scatter matrix", 0, 4, 2, lambda: self.plot_scatter_matrix())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -183,6 +185,13 @@ class ViewControlPane(tk.Frame):
         feat_list = list(self.select.tags)
         dist = self.df[feat_list]
         dist.plot.box(ax=self.plot.ax, legend=False)
+        self.plot.ax.grid(axis='x')
+
+    def plot_bar(self):
+        self.show_plot()
+        feat_list = list(self.select.tags)
+        dist = self.df[feat_list]
+        dist.plot.barh(ax=self.plot.ax, legend=False)
         self.plot.ax.grid(axis='x')
 
     def plot_scatter_matrix(self):

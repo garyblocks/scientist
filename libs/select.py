@@ -11,7 +11,7 @@ class Select(tk.Frame):
         self.options = options
         self.tags = set()
         self.label = None
-        self.choice = None
+        self.cells = []
         self.init_frame()
 
     def reload(self):
@@ -19,28 +19,36 @@ class Select(tk.Frame):
 
     def init_frame(self):
         self.master.row += 1
-        label = tk.Label(self, text="features: no feature",
-                         font=LABEL, bg='#F3F3F3')
-        label.grid(row=self.master.row, column=0, columnspan=6)
-        self.label = label
-        self.master.row += 1
-        choice = tk.StringVar(self)
-        if not self.options:
-            self.options = ['']
-        # set default
-        choice.set(self.options[0] if self.options else '')
-        # create selection menu
-        menu = tk.OptionMenu(self, choice, *self.options)
-        menu.config(bg="#F3F3F3")
-        menu.grid(row=self.master.row, column=0, columnspan=4)
-        self.choice = choice
-        Button(self.master, "add", 0, 4, 2, lambda: self.add())
+        Button(self.master, "select features", 0, 0, 6, lambda: self.pick())
 
-    def add(self):
-        new = self.choice.get()
-        self.tags.add(new)
-        self.label['text'] = 'features: ' + ','.join(list(self.tags))
+    def pick(self):
+        pop_up_win = tk.Toplevel()
+        pop_up_win.wm_title("Features")
+
+        label = tk.Label(
+            pop_up_win, text="features",
+            font=LABEL, bg='#F3F3F3'
+        )
+        label.grid(row=0)
+        self.cells = []
+        for i, op in enumerate(self.options):
+            label = tk.Label(pop_up_win, text=op)
+            label.grid(row=i+1)
+            label.bind("<Button-1>", lambda e, i=i, op=op: self.add(i, op))
+            self.cells.append(label)
+            if op in self.tags:
+                self.cells[i].config(bg="red")
+        self.pop_up_win = pop_up_win
+
+    def add(self, i, op):
+        if op in self.tags:
+            # unselect
+            self.tags.remove(op)
+            self.cells[i].config(bg="white")
+        else:
+            # select
+            self.tags.add(op)
+            self.cells[i].config(bg="red")
 
     def clear(self):
-        self.label['text'] = 'features: no feature'
         self.tags = set()
