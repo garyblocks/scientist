@@ -91,28 +91,19 @@ class PrepControlPane(tk.Frame):
         # one hot encoder
         Button(self, "k hot", 0, 2, 2, lambda: self.one_hot())
         # encode by quantile
-        Button(self, "quantile", 0, 4, 2, lambda: self.pop_up())
+        Button(self, "quantile", 0, 4, 2, lambda: self.q_encode_pop_up())
 
         # drop
         self.row += 1
         label_rm = tk.Label(
-            self, text="removal",
+            self, text="drop data",
             font=SECTION, bg='#F3F3F3'
         )
         label_rm.grid(row=self.row, column=0, columnspan=6)
         # remove by column
         Button(self, "drop features", 1, 0, 6, lambda: self.drop_feature())
         # remove by index
-        self.row += 1
-        label_index = tk.Label(
-            self, text="index:",
-            font=LABEL, bg='#F3F3F3'
-        )
-        label_index.grid(row=self.row, column=0, columnspan=2)
-        entry_index = tk.Entry(self, highlightbackground='#F3F3F3', width=5)
-        entry_index.grid(row=self.row, column=2, columnspan=2)
-        self.entry_index = entry_index
-        Button(self, "drop subjects", 0, 4, 2, lambda: self.drop_index())
+        Button(self, "drop subjects", 1, 0, 6, lambda: self.drop_index_pop_up())
 
         # sample rows
         self.row += 1
@@ -132,14 +123,15 @@ class PrepControlPane(tk.Frame):
 
         # deal with missing value
         self.row += 1
-        label_sample = tk.Label(
+        label_miss = tk.Label(
             self, text="missing",
             font=SECTION, bg='#F3F3F3'
         )
-        label_sample.grid(row=self.row, column=0, columnspan=6)
+        label_miss.grid(row=self.row, column=0, columnspan=6)
         Button(self, "drop NAN", 1, 0, 2, lambda: self.drop_na())
         Button(self, "fill mean", 0, 2, 2, lambda: self.fill_mean())
         Button(self, "fill median", 0, 4, 2, lambda: self.fill_median())
+        Button(self, "fill forward", 1, 0, 2, lambda: self.fill_forward())
 
     def scale_01(self):
         df = self.df
@@ -192,6 +184,7 @@ class PrepControlPane(tk.Frame):
         df = self.df
         index = int(self.entry_index.get())
         df.drop(index=index, inplace=True)
+        self.pop_up_win.destroy()
         self.controller.reload()
 
     def sample(self):
@@ -213,9 +206,13 @@ class PrepControlPane(tk.Frame):
         self.df.fillna(self.df.median(), inplace=True)
         self.controller.reload()
 
-    def pop_up(self):
+    def fill_forward(self):
+        self.df.fillna(self.df.ffill(), inplace=True)
+        self.controller.reload()
+
+    def q_encode_pop_up(self):
         pop_up_win = tk.Toplevel()
-        pop_up_win.wm_title("Window")
+        pop_up_win.wm_title("Quantile encode")
 
         label = tk.Label(
             pop_up_win, text="number of quantiles:",
@@ -227,6 +224,24 @@ class PrepControlPane(tk.Frame):
         self.entry_nq = entry_nq
 
         btn = tk.Button(pop_up_win, text="Encode", command=self.q_encoder)
+        btn.grid(row=2, column=0)
+
+        self.pop_up_win = pop_up_win
+
+    def drop_index_pop_up(self):
+        pop_up_win = tk.Toplevel()
+        pop_up_win.wm_title("drop by index")
+
+        label = tk.Label(
+            pop_up_win, text="index: ",
+            font=LABEL, bg='#F3F3F3'
+        )
+        label.grid(row=0, column=0)
+        entry_index = tk.Entry(pop_up_win, highlightbackground='#F3F3F3', width=10)
+        entry_index.grid(row=1, column=0)
+        self.entry_index = entry_index
+
+        btn = tk.Button(pop_up_win, text="drop", command=self.drop_index)
         btn.grid(row=2, column=0)
 
         self.pop_up_win = pop_up_win

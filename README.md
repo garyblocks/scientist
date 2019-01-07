@@ -23,6 +23,11 @@ A practical toolbox for machine learning and statistical analysis
 * currently support: kde, histogram, line, box, bar and scatter matrix
 
 ### preprocess
+* you can scale the variables to 0-1 or normalize them by scaler
+* or you can encode them by label, k hot or quatile by encoder
+* when the dataset is too large, drop columns, rows or just draw a sample
+* the software provides 4 strategies to deal with missing: drop the row, fill by mean/median or fill by the forward value
+
 ### clustering
 ### classification
 ### regression
