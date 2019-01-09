@@ -5,7 +5,7 @@ from sklearn.cluster import MiniBatchKMeans
 from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
-from libs.font import TITLE, LABEL
+from libs.font import TITLE, SECTION, LABEL
 
 
 class ClusteringKmeansPage(tk.Frame):
@@ -59,9 +59,15 @@ class KmeansControlPane(tk.Frame):
         # title
         text = tk.Label(
             self, text="Kmeans", font=TITLE, bg='#F3F3F3',
-            width=25
         )
         text.grid(row=self.row, column=0, columnspan=6)
+
+        # section setting
+        self.row += 1
+        label_setting = tk.Label(
+            self, text="settings", font=SECTION, bg='#F3F3F3',
+        )
+        label_setting.grid(row=self.row, column=0, columnspan=6)
 
         # select feature
         select = Select(self, self.df.columns.values.tolist())
@@ -90,6 +96,14 @@ class KmeansControlPane(tk.Frame):
 
         # run the clustering algorithm
         Button(self, "cluster", 1, 0, 6, lambda: self.kmeans())
+
+        # visualization
+        self.row += 1
+        label_setting = tk.Label(
+            self, text="visualization", font=SECTION, bg='#F3F3F3'
+        )
+        label_setting.grid(row=self.row, column=0, columnspan=6)
+
         # plot the clusters
         Button(self, "t-SNE", 1, 0, 3, lambda: self.plot_tsne())
         Button(self, "radviz", 0, 3, 3, lambda: self.plot_radvis())

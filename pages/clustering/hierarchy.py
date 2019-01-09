@@ -7,7 +7,7 @@ from sklearn.manifold import TSNE
 from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
-from libs.font import TITLE, LABEL
+from libs.font import TITLE, SECTION, LABEL
 
 
 class ClusteringHierarchyPage(tk.Frame):
@@ -66,6 +66,14 @@ class HierarchyControlPane(tk.Frame):
         )
         text.grid(row=self.row, column=0, columnspan=6)
 
+        # section setting
+        self.row += 1
+        label_setting = tk.Label(
+            self, text="settings", font=SECTION, bg='#F3F3F3',
+            width=25
+        )
+        label_setting.grid(row=self.row, column=0, columnspan=6)
+
         # select features
         select = Select(self, self.df.columns.values.tolist())
         select.grid(row=self.row, column=0, columnspan=6)
@@ -75,8 +83,7 @@ class HierarchyControlPane(tk.Frame):
         self.row += 1
         label_link = tk.Label(self, text="linkage",
                               font=LABEL, bg='#F3F3F3')
-        label_link.grid(row=self.row, column=0, columnspan=6)
-        self.row += 1
+        label_link.grid(row=self.row, column=0, columnspan=3)
         link = tk.StringVar(self)
         links = [
             'ward', 'single', 'complete', 'average', 'weighted', 'centroid',
@@ -85,15 +92,14 @@ class HierarchyControlPane(tk.Frame):
         link.set('ward')
         link_menu = tk.OptionMenu(self, link, *links)
         link_menu.config(bg="#F3F3F3")
-        link_menu.grid(row=self.row, column=0, columnspan=6)
+        link_menu.grid(row=self.row, column=3, columnspan=2)
         self.link = link
 
         # set distance
         self.row += 1
         label_dist = tk.Label(self, text="distance",
                               font=LABEL, bg='#F3F3F3')
-        label_dist.grid(row=self.row, column=0, columnspan=6)
-        self.row += 1
+        label_dist.grid(row=self.row, column=0, columnspan=3)
         dist = tk.StringVar(self)
         dists = [
             'euclidean', 'minkowski', 'cityblock', 'seuclidean', 'sqeuclidean',
@@ -102,7 +108,7 @@ class HierarchyControlPane(tk.Frame):
         dist.set('euclidean')
         dist_menu = tk.OptionMenu(self, dist, *dists)
         dist_menu.config(bg="#F3F3F3")
-        dist_menu.grid(row=self.row, column=0, columnspan=6)
+        dist_menu.grid(row=self.row, column=3, columnspan=2)
         self.dist = dist
 
         # set number of clusters
@@ -127,6 +133,14 @@ class HierarchyControlPane(tk.Frame):
 
         # run the clustering algorithm
         Button(self, "cluster", 1, 0, 6, lambda: self.hierarchy())
+
+        # visualization
+        self.row += 1
+        label_setting = tk.Label(
+            self, text="visualization", font=SECTION, bg='#F3F3F3'
+        )
+        label_setting.grid(row=self.row, column=0, columnspan=6)
+
         # plot the clusters
         Button(self, "matrix", 1, 0, 2, lambda: self.plot_matrix())
         Button(self, "t-SNE", 0, 2, 2, lambda: self.plot_tsne())
