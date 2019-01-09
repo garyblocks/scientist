@@ -7,6 +7,7 @@ from pages.preprocess import DataPreprocessPage
 from pages.view import DataViewPage
 from pages.clustering.kmeans import ClusteringKmeansPage
 from pages.clustering.hierarchy import ClusteringHierarchyPage
+from pages.clustering.ap import ClusteringApPage
 from pages.classification.biclass import ClassificationBiclassPage
 from pages.classification.multiclass import ClassificationMulticlassPage
 from pages.regression.linear import RegressionLinearPage
@@ -51,6 +52,10 @@ class Scientist(tk.Tk):
         analysis_clustering_menu.add_command(
             label="Hierarchy",
             command=self.clustering_hierarchy
+        )
+        analysis_clustering_menu.add_command(
+            label="Affinity Propagation",
+            command=self.clustering_ap
         )
         analysis_menu.add_cascade(
             label="Clustering",
@@ -100,6 +105,7 @@ class Scientist(tk.Tk):
         self.frames = {}
         pages = (StartPage, DataViewPage, DataPreprocessPage,
                  ClusteringKmeansPage, ClusteringHierarchyPage,
+                 ClusteringApPage,
                  ClassificationBiclassPage, ClassificationMulticlassPage,
                  RegressionLinearPage, AnalysisCoincidencePage)
         for F in pages:
@@ -157,6 +163,10 @@ class Scientist(tk.Tk):
     def clustering_hierarchy(self):
         self.frames[ClusteringHierarchyPage].reload()
         self.show_frame(ClusteringHierarchyPage)
+
+    def clustering_ap(self):
+        self.frames[ClusteringApPage].reload()
+        self.show_frame(ClusteringApPage)
 
     def classification_biclass(self):
         self.frames[ClassificationBiclassPage].reload()
