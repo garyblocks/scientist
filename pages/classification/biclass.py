@@ -9,6 +9,7 @@ from libs.font import TITLE, LABEL
 from libs.button import Button
 from libs.select import Select
 from libs.table import Table
+from libs.alert import Alert
 
 
 class ClassificationBiclassPage(tk.Frame):
@@ -71,7 +72,7 @@ class ClassificationControlPane(tk.Frame):
 
         # select features to classify
         self.row += 1
-        label_class = tk.Label(self, text="choose class feature",
+        label_class = tk.Label(self, text="choose target",
                                font=LABEL, bg='#F3F3F3')
         label_class.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
@@ -122,6 +123,10 @@ class ClassificationControlPane(tk.Frame):
         algo = self.chose_algo.get()
         self.X = self.df[feat_list].values
         self.y = self.df[self.chose_cls.get()].values
+        if len(set(self.y)) > 2:
+            alert = Alert()
+            alert.warn("target must be binary")
+            return
         self.hold_out()
         if algo == 'kNN':
             self.model = KNeighborsClassifier()

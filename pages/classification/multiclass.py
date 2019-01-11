@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score, confusion_matrix
 from libs.font import TITLE, LABEL
 from libs.button import Button
@@ -92,7 +93,7 @@ class ClassificationControlPane(tk.Frame):
         label_algo.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         chosen_algo = tk.StringVar(self)
-        algos = ['kNN', 'Naive Bayes', 'Decision Tree']
+        algos = ['kNN', 'Naive Bayes', 'Decision Tree', 'LDA']
         chosen_algo.set(algos[0])
         algo_menu = tk.OptionMenu(self, chosen_algo, *algos)
         algo_menu.config(bg="#F3F3F3")
@@ -140,6 +141,8 @@ class ClassificationControlPane(tk.Frame):
             self.model = BernoulliNB()
         elif algo == 'Decision Tree':
             self.model = DecisionTreeClassifier()
+        elif algo == 'LDA':
+            self.model = LinearDiscriminantAnalysis()
         self.evaluate()
 
     def hold_out(self):
