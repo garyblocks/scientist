@@ -129,10 +129,19 @@ class RegressionControlPane(tk.Frame):
         return pd.DataFrame(data=data.T, columns=columns)
 
     def get_statistics(self, results):
-        stat_names = ['R-squared', 'Adj. R-squared']
+        stat_names = [
+            'R-squared', 'Adj. R-squared', 'F-statistic', 'Prob (F-statistic)',
+            'Log-Likelihood', 'AIC', 'BIC', 'Df Model'
+        ]
         values = [
             np.round(results.rsquared, 4),
-            np.round(results.rsquared_adj, 4)
+            np.round(results.rsquared_adj, 4),
+            np.round(results.fvalue, 4),
+            np.round(results.f_pvalue, 4),
+            np.round(results.llf, 4),
+            np.round(results.aic, 4),
+            np.round(results.bic, 4),
+            np.round(results.df_model, 4)
         ]
         data = np.vstack((np.array(stat_names), np.array(values)))
         columns = ['Stats', 'Values']
@@ -148,30 +157,29 @@ class RegressionResultPane(tk.Frame):
         self.df = self.controller.df
         self.coef_df = self.df  # for initialize
         self.stat_df = self.df  # for initialize
+        self.coef_label = None
         self.coef_table = None
+        self.stat_label = None
         self.stat_table = None
-        self.row = 0
         self.init_frame()
 
     def reload(self):
-        self.row = 0
         self.df = self.controller.df
+        self.coef_label.destroy()
         self.coef_table.destroy()
+        self.stat_label.destroy()
         self.stat_table.destroy()
         self.init_frame()
 
     def init_frame(self):
         # model statistics
-        stat_label = tk.Label(self, text="Model Statistics", font=SECTION, bg='#F3F3F3')
-        stat_label.grid(row=self.row)
-        self.row += 1
+        self.stat_label = tk.Label(self, text="Model Statistics", font=SECTION, bg='#F3F3F3')
+        self.stat_label.pack()
         self.stat_table = Table(self, self.stat_df, width=500)
-        self.stat_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.stat_table.pack()
 
         # coefficients
-        self.row += 1
-        coef_label = tk.Label(self, text="Model Coefficients", font=SECTION, bg='#F3F3F3')
-        coef_label.grid(row=self.row)
-        self.row += 1
+        self.coef_label = tk.Label(self, text="Model Coefficients", font=SECTION, bg='#F3F3F3')
+        self.coef_label.pack()
         self.coef_table = Table(self, self.coef_df, width=500)
-        self.coef_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.coef_table.pack(fill=tk.BOTH, expand=tk.YES)
