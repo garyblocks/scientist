@@ -5,6 +5,7 @@ from tkinter import filedialog
 from pages.start import StartPage
 from pages.preprocess import DataPreprocessPage
 from pages.view import DataViewPage
+from pages.text_view import TextViewPage
 from pages.clustering.kmeans import ClusteringKmeansPage
 from pages.clustering.hierarchy import ClusteringHierarchyPage
 from pages.clustering.ap import ClusteringApPage
@@ -21,6 +22,9 @@ class Scientist(tk.Tk):
     def __init__(self, *args, **kwargs):
         # data frame
         self.DF = pd.DataFrame()
+
+        # string
+        self.STR = ''
 
         # load tkinter
         tk.Tk.__init__(self, *args, **kwargs)
@@ -104,6 +108,7 @@ class Scientist(tk.Tk):
         # load frames
         self.frames = {}
         pages = (StartPage, DataViewPage, DataPreprocessPage,
+                 TextViewPage,
                  ClusteringKmeansPage, ClusteringHierarchyPage,
                  ClusteringApPage,
                  ClassificationBiclassPage, ClassificationMulticlassPage,
@@ -129,6 +134,15 @@ class Scientist(tk.Tk):
         self.frames[DataViewPage].reload()
         self.show_frame(DataViewPage)
 
+    def import_txt(self):
+        filename = self.select_file()
+        if not filename:
+            return
+        with open(filename, 'r') as fin:
+            self.STR = fin.read()
+        self.frames[TextViewPage].reload()
+        self.show_frame(TextViewPage)
+
     def save_csv(self):
         filename = filedialog.asksaveasfile(
             mode='w',
@@ -141,7 +155,7 @@ class Scientist(tk.Tk):
         filename = filedialog.askopenfilename(
             initialdir="~/",
             title="Select file",
-            filetypes=(("csv files", "*.csv"), ("all files", "*.*"))
+            filetypes=(("csv files", "*.csv"), ("txt files", "*.txt"), ("all files", "*.*"))
         )
         return filename
 

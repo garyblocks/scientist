@@ -1,6 +1,5 @@
 import tkinter as tk
 from libs.font import LABEL
-from libs.button import Button
 
 
 class StartPage(tk.Frame):
@@ -16,7 +15,26 @@ class StartPage(tk.Frame):
         label = tk.Label(
             self,
             text='There is no dataframe yet, please import one',
-            font=LABEL
+            font=LABEL,
+            bg='#F3F3F3',
+            pady=15
         )
-        label.grid(row=self.row, column=0)
-        Button(self, "Import CSV", 1, 0, 2, lambda: self.controller.import_csv())
+        label.pack()
+
+        import_csv_btn = tk.Button(
+            self,
+            text="Import CSV",
+            command=lambda: self.controller.import_csv(),
+            highlightbackground='#F3F3F3',
+            pady=15
+        )
+        import_csv_btn.pack()
+
+        import_txt_btn = tk.Button(
+            self,
+            text="Import TXT",
+            command=lambda: self.controller.import_txt(),
+            highlightbackground='#F3F3F3',
+            pady=15
+        )
+        import_txt_btn.pack()
