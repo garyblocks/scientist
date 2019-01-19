@@ -1,6 +1,6 @@
 import tkinter as tk
 from libs.button import Button
-from libs.font import LABEL
+from libs.font import SECTION
 
 
 class Select(tk.Frame):
@@ -22,18 +22,25 @@ class Select(tk.Frame):
         Button(self.master, "select features", 0, 0, 6, lambda: self.pick())
 
     def pick(self):
-        pop_up_win = tk.Toplevel()
+        num_of_options = len(self.options)
+        num_of_columns = max(int(num_of_options**0.5), 1)
+        win_size = num_of_columns * 20
+        pop_up_win = tk.Toplevel(width=win_size, height=win_size)
         pop_up_win.wm_title("Features")
 
-        label = tk.Label(
-            pop_up_win, text="features",
-            font=LABEL, bg='#F3F3F3'
-        )
-        label.grid(row=0)
+        label = tk.Label(pop_up_win, text="features", font=SECTION)
+        row, col = 0, 0
+        label.grid(row=row, column=num_of_columns // 2)
+        row += 1
         self.cells = []
         for i, op in enumerate(self.options):
             label = tk.Label(pop_up_win, text=op)
-            label.grid(row=i+1)
+            label.grid(row=row, column=col)
+            if col < num_of_columns:
+                col += 1
+            else:
+                row += 1
+                col = 0
             label.bind("<Button-1>", lambda e, i=i, op=op: self.add(i, op))
             self.cells.append(label)
             if op in self.tags:
