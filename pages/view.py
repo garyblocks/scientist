@@ -91,18 +91,15 @@ class ViewControlPane(tk.Frame):
         select.grid(row=self.row, column=0, columnspan=6)
         self.select = select
 
-        # kde plot
+        # different types of plots
         Button(self, "kde", 1, 0, 2, lambda: self.plot_kde())
-        # histogram
         Button(self, "histogram", 0, 2, 2, lambda: self.plot_hist())
-        # linechart
         Button(self, "line chart", 0, 4, 2, lambda: self.plot_line())
-        # box plot
         Button(self, "box", 1, 0, 2, lambda: self.plot_box())
-        # bar plot
         Button(self, "bar", 0, 2, 2, lambda: self.plot_bar())
-        # scatter matrix
-        Button(self, "scatter matrix", 0, 4, 2, lambda: self.plot_scatter_matrix())
+        Button(self, "area", 0, 4, 2, lambda: self.plot_area())
+        Button(self, "scatter matrix", 1, 0, 2, lambda: self.plot_scatter_matrix())
+
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -192,6 +189,13 @@ class ViewControlPane(tk.Frame):
         feat_list = list(self.select.tags)
         dist = self.df[feat_list]
         dist.plot.barh(ax=self.plot.ax, legend=False)
+        self.plot.ax.grid(axis='x')
+
+    def plot_area(self):
+        self.show_plot()
+        feat_list = list(self.select.tags)
+        dist = self.df[feat_list]
+        dist.plot.area(ax=self.plot.ax)
         self.plot.ax.grid(axis='x')
 
     def plot_scatter_matrix(self):
