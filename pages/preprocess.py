@@ -132,6 +132,8 @@ class PrepControlPane(tk.Frame):
         Button(self, "fill mean", 0, 2, 2, lambda: self.fill_mean())
         Button(self, "fill median", 0, 4, 2, lambda: self.fill_median())
         Button(self, "fill forward", 1, 0, 2, lambda: self.fill_forward())
+        Button(self, "fill backward", 0, 2, 2, lambda: self.fill_backward())
+        Button(self, "fill linear", 0, 4, 2, lambda: self.fill_linear())
 
     def scale_01(self):
         df = self.df
@@ -208,6 +210,14 @@ class PrepControlPane(tk.Frame):
 
     def fill_forward(self):
         self.df.fillna(self.df.ffill(), inplace=True)
+        self.controller.reload()
+
+    def fill_backward(self):
+        self.df.fillna(self.df.bfill(), inplace=True)
+        self.controller.reload()
+
+    def fill_linear(self):
+        self.df.fillna(self.df.interpolate(), inplace=True)
         self.controller.reload()
 
     def q_encode_pop_up(self):
