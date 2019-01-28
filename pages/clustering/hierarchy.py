@@ -4,6 +4,7 @@ import pylab
 import matplotlib
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
@@ -145,6 +146,7 @@ class HierarchyControlPane(tk.Frame):
         Button(self, "matrix", 1, 0, 2, lambda: self.plot_matrix())
         Button(self, "t-SNE", 0, 2, 2, lambda: self.plot_tsne())
         Button(self, "radviz", 0, 4, 2, lambda: self.plot_radvis())
+        Button(self, "PCA", 1, 0, 2, lambda: self.plot_pca())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -213,6 +215,15 @@ class HierarchyControlPane(tk.Frame):
         cls = self.entry_col_name.get()
         y = self.df[cls].values
         X_embedded = TSNE().fit_transform(X)
+        self.plot.clear()
+        self.plot.plot_2d_scatter(X_embedded, y)
+
+    def plot_pca(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        X_embedded = PCA(n_components=2).fit_transform(X)
         self.plot.clear()
         self.plot.plot_2d_scatter(X_embedded, y)
 

@@ -1,6 +1,7 @@
 import tkinter as tk
 import pandas as pd
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 from sklearn.cluster import AffinityPropagation
 from libs.plot import Plot
 from libs.button import Button
@@ -96,8 +97,9 @@ class ApControlPane(tk.Frame):
         label_setting.grid(row=self.row, column=0, columnspan=6)
 
         # plot the clusters
-        Button(self, "t-SNE", 1, 0, 3, lambda: self.plot_tsne())
-        Button(self, "radviz", 0, 3, 3, lambda: self.plot_radvis())
+        Button(self, "t-SNE", 1, 0, 2, lambda: self.plot_tsne())
+        Button(self, "radviz", 0, 2, 2, lambda: self.plot_radvis())
+        Button(self, "PCA", 0, 4, 2, lambda: self.plot_pca())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
@@ -125,6 +127,15 @@ class ApControlPane(tk.Frame):
         cls = self.entry_col_name.get()
         y = self.df[cls].values
         X_embedded = TSNE().fit_transform(X)
+        self.plot.clear()
+        self.plot.plot_2d_scatter(X_embedded, y)
+
+    def plot_pca(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        X_embedded = PCA(n_components=2).fit_transform(X)
         self.plot.clear()
         self.plot.plot_2d_scatter(X_embedded, y)
 

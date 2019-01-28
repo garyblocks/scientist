@@ -29,6 +29,15 @@ A practical toolbox for machine learning and statistical analysis
 * the software provides 4 strategies to deal with missing: drop the row, fill by mean/median or fill by the forward value
 
 ### clustering
+* build clusters using the following algorithms
+    * kmeans
+    * hierarchical methods
+    * affinity propagation
+* visualize the clusters using popular plot methods
+    * t-sne
+    * radviz
+    * top 2 pcas
+    * hierarchical tree(only for hierarchical methods)
 ### classification
 ### regression
 ### coincidence
