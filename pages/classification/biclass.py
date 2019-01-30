@@ -1,8 +1,8 @@
 import tkinter as tk
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import SGDClassifier, LogisticRegression
+from sklearn.linear_model import Perceptron, SGDClassifier, LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
 from libs.font import TITLE, LABEL
@@ -72,7 +72,7 @@ class ClassificationControlPane(tk.Frame):
 
         # select features to classify
         self.row += 1
-        label_class = tk.Label(self, text="choose target",
+        label_class = tk.Label(self, text="choose class label",
                                font=LABEL, bg='#F3F3F3')
         label_class.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
@@ -93,7 +93,7 @@ class ClassificationControlPane(tk.Frame):
         label_algo.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
         chosen_algo = tk.StringVar(self)
-        algos = ['kNN', 'SGD', 'Logistic']
+        algos = ['kNN', 'SGD', 'Logistic', 'Perceptron']
         chosen_algo.set(algos[0])
         algo_menu = tk.OptionMenu(self, chosen_algo, *algos)
         algo_menu.config(bg="#F3F3F3")
@@ -102,13 +102,24 @@ class ClassificationControlPane(tk.Frame):
 
         # train test split
         self.row += 1
-        label_sec_1 = tk.Label(self, text="train-test split ratio",
+        label_sec_1 = tk.Label(self, text="hold out ratio",
                                font=LABEL, bg='#F3F3F3')
         label_sec_1.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
-        entry_split_rate = tk.Entry(self)
+        entry_split_rate = tk.Scale(self, from_=0, to=1, orient=tk.HORIZONTAL, resolution=0.1, bg='#F3F3F3', length=200)
         entry_split_rate.grid(row=self.row, column=0, columnspan=6)
         self.split_rate = entry_split_rate
+
+        # cross validation
+        self.row += 1
+        label_sec_2 = tk.Label(self, text="CV folds",
+                               font=LABEL, bg='#F3F3F3')
+        label_sec_2.grid(row=self.row, column=0, columnspan=6)
+        self.row += 1
+        entry_cv_k = tk.Scale(self, from_=1, to=10, orient=tk.HORIZONTAL, resolution=1, bg='#F3F3F3', length=200)
+        entry_cv_k.grid(row=self.row, column=0, columnspan=6)
+        self.cv_k = entry_cv_k
+
         Button(self, "classify", 1, 0, 6, lambda: self.run())
 
         # default sizes
@@ -134,14 +145,20 @@ class ClassificationControlPane(tk.Frame):
             self.model = SGDClassifier(random_state=101)
         elif algo == 'Logistic':
             self.model = LogisticRegression(C=1., solver='lbfgs')
-        self.model.fit(self.X_train, self.y_train)
+        elif algo == 'Perceptron':
+            self.model = Perceptron(tol=1e-3, random_state=0)
         self.evaluate()
 
     def hold_out(self):
         r = float(self.split_rate.get())
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=r, random_state=101)  # noqa
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=r, random_state=101, stratify=self.y)  # noqa
 
     def evaluate(self):
+        # apply cross validation for training
+        k = int(self.cv_k.get())
+        y_train_pred = cross_val_predict(self.model, self.X_train, self.y_train, cv=k)
+        self.model.fit(self.X_train, self.y_train)
+        y_test_pred = self.model.predict(self.X_test)
         y_train_pred = self.model.predict(self.X_train)
         y_test_pred = self.model.predict(self.X_test)
         train_accuracy = accuracy_score(self.y_train, y_train_pred)

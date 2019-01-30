@@ -106,7 +106,7 @@ class ClassificationControlPane(tk.Frame):
                                font=LABEL, bg='#F3F3F3')
         label_sec_1.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
-        entry_split_rate = tk.Scale(self, from_=0, to=1, orient=tk.HORIZONTAL, resolution=0.1, bg='#F3F3F3')
+        entry_split_rate = tk.Scale(self, from_=0, to=1, orient=tk.HORIZONTAL, resolution=0.1, bg='#F3F3F3', length=200)
         entry_split_rate.grid(row=self.row, column=0, columnspan=6)
         self.split_rate = entry_split_rate
 
@@ -116,7 +116,7 @@ class ClassificationControlPane(tk.Frame):
                                font=LABEL, bg='#F3F3F3')
         label_sec_2.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
-        entry_cv_k = tk.Scale(self, from_=1, to=10, orient=tk.HORIZONTAL, resolution=1, bg='#F3F3F3')
+        entry_cv_k = tk.Scale(self, from_=1, to=10, orient=tk.HORIZONTAL, resolution=1, bg='#F3F3F3', length=200)
         entry_cv_k.grid(row=self.row, column=0, columnspan=6)
         self.cv_k = entry_cv_k
 
@@ -147,7 +147,7 @@ class ClassificationControlPane(tk.Frame):
 
     def hold_out(self):
         r = float(self.split_rate.get())
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=r, random_state=101)  # noqa
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=r, random_state=101, stratify=self.y)  # noqa
 
     def evaluate(self):
         # apply cross validation for training

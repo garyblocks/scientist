@@ -39,5 +39,9 @@ A practical toolbox for machine learning and statistical analysis
     * top 2 pcas
     * hierarchical tree(only for hierarchical methods)
 ### classification
+* support both biclass problems and multiclass problems
+* lots of common classifiers
+* train test split and cross validation
+* basic metrics and confusion matrix
 ### regression
 ### coincidence
