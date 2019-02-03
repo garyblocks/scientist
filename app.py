@@ -12,6 +12,7 @@ from pages.clustering.ap import ClusteringApPage
 from pages.classification.biclass import ClassificationBiclassPage
 from pages.classification.multiclass import ClassificationMulticlassPage
 from pages.regression.linear import RegressionLinearPage
+from pages.regression.glm import RegressionGLMPage
 from pages.coincidence import AnalysisCoincidencePage
 
 DATAFRAMES = {}
@@ -87,6 +88,10 @@ class Scientist(tk.Tk):
             label="linear",
             command=self.regression_linear
         )
+        analysis_regression_menu.add_command(
+            label="glm",
+            command=self.regression_linear
+        )
         analysis_menu.add_cascade(
             label="regression",
             menu=analysis_regression_menu
@@ -112,7 +117,8 @@ class Scientist(tk.Tk):
                  ClusteringKmeansPage, ClusteringHierarchyPage,
                  ClusteringApPage,
                  ClassificationBiclassPage, ClassificationMulticlassPage,
-                 RegressionLinearPage, AnalysisCoincidencePage)
+                 RegressionLinearPage, RegressionGLMPage,
+                 AnalysisCoincidencePage)
         for F in pages:
             frame = F(container, self)
             self.frames[F] = frame
@@ -193,6 +199,10 @@ class Scientist(tk.Tk):
     def regression_linear(self):
         self.frames[RegressionLinearPage].reload()
         self.show_frame(RegressionLinearPage)
+
+    def regression_glm(self):
+        self.frames[RegressionGLMPage].reload()
+        self.show_frame(RegressionGLMPage)
 
     def analysis_coincidence(self):
         self.frames[AnalysisCoincidencePage].reload()

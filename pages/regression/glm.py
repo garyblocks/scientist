@@ -8,7 +8,7 @@ from libs.button import Button
 from libs.select import Select
 
 
-class RegressionLinearPage(tk.Frame):
+class RegressionGLMPage(tk.Frame):
 
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master)
@@ -95,7 +95,7 @@ class RegressionControlPane(tk.Frame):
         feat_list = list(self.select.tags)
         self.X = self.df[feat_list].values
         self.y = self.df[self.chose_cls.get()].values
-        self.model = sm.OLS(self.y, sm.add_constant(self.X))
+        self.model = sm.GLM(self.y, sm.add_constant(self.X), family=sm.families.Gamma())
         results = self.model.fit()
         self.evaluate(results)
 
@@ -130,18 +130,18 @@ class RegressionControlPane(tk.Frame):
 
     def get_statistics(self, results):
         stat_names = [
-            'R-squared', 'Adj. R-squared', 'F-statistic', 'Prob (F-statistic)',
-            'Log-Likelihood', 'AIC', 'BIC', 'Df Model'
+            # 'R-squared', 'Adj. R-squared', 'F-statistic', 'Prob (F-statistic)',
+            # 'Log-Likelihood', 'AIC', 'BIC', 'Df Model'
         ]
         values = [
-            np.round(results.rsquared, 4),
-            np.round(results.rsquared_adj, 4),
-            np.round(results.fvalue, 4),
-            np.round(results.f_pvalue, 4),
-            np.round(results.llf, 4),
-            np.round(results.aic, 4),
-            np.round(results.bic, 4),
-            np.round(results.df_model, 4)
+            # np.round(results.rsquared, 4),
+            # np.round(results.rsquared_adj, 4),
+            # np.round(results.fvalue, 4),
+            # np.round(results.f_pvalue, 4),
+            # np.round(results.llf, 4),
+            # np.round(results.aic, 4),
+            # np.round(results.bic, 4),
+            # np.round(results.df_model, 4)
         ]
         data = np.vstack((np.array(stat_names), np.array(values)))
         columns = ['Stats', 'Values']

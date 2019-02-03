@@ -44,4 +44,6 @@ A practical toolbox for machine learning and statistical analysis
 * train test split and cross validation
 * basic metrics and confusion matrix
 ### regression
+* linear regression with basic statistics
+* glm (gamma)
 ### coincidence
