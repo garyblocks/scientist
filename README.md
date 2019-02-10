@@ -8,19 +8,23 @@ A practical toolbox for machine learning and statistical analysis
 * then run `python app.py`
 
 ## Features
-### start
-* import a csv file(currenly only takes csv)
+### load data
+* now the app takes two types of data:
+    * table data: csv file with header
+    * text data: txt file
 
-### view
+### views
 #### Table View
-* table view is to look at the origin data
-* you can get a quick look of the dataset through viewing by page
-* you can also shuffle the dataset to get a more general idea
-* Basic statics and correlation are also available
+* table view is used to look at the origin data
+* large data frame is split with pagination
+* to get a more general view, you can shuffle the data
+* basic statics and correlation are also available
 #### Plot View
 * plot view will give a more abstract idea of the dataset through plots
 * you can select which features you want to plot
 * currently support: kde, histogram, line, box, bar and scatter matrix
+#### Text View
+* this is only for text data, we can read through the content
 
 ### preprocess
 * you can scale the variables to 0-1 or normalize them by scaler

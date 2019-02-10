@@ -99,6 +99,7 @@ class ViewControlPane(tk.Frame):
         Button(self, "bar", 0, 2, 2, lambda: self.plot_bar())
         Button(self, "area", 0, 4, 2, lambda: self.plot_area())
         Button(self, "scatter matrix", 1, 0, 2, lambda: self.plot_scatter_matrix())
+        Button(self, "hexbin", 0, 2, 2, lambda: self.plot_hexbin())
 
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
@@ -204,6 +205,21 @@ class ViewControlPane(tk.Frame):
         tmp = self.df[feat_list]
         scatter_matrix(tmp, ax=self.plot.ax, diagonal='kde')
         self.plot.canvas.draw()
+
+    def plot_hexbin(self):
+        self.show_plot()
+        feat_list = list(self.select.tags)
+        dist = self.df[feat_list]
+        if len(feat_list) < 2:
+            return False
+        elif len(feat_list) == 2:
+            dist.plot.hexbin(x=feat_list[0], y=feat_list[1], ax=self.plot.ax, gridsize=20)
+        else:
+            dist.plot.hexbin(
+                x=feat_list[0], y=feat_list[1],
+                C=feat_list[2], ax=self.plot.ax, gridsize=20
+            )
+        self.plot.ax.grid(axis='x')
 
     def show_plot(self):
         self.controller.vertical.forget(self.controller.table)
