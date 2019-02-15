@@ -27,10 +27,10 @@ A practical toolbox for machine learning and statistical analysis
 * this is only for text data, we can read through the content
 
 ### preprocess
-* you can scale the variables to 0-1 or normalize them by scaler
-* or you can encode them by label, k hot or quatile by encoder
+* we provide several scalers to scale the features
+* popular encoders
 * when the dataset is too large, drop columns, rows or just draw a sample
-* the software provides 4 strategies to deal with missing: drop the row, fill by mean/median or fill by the forward value
+* different strategies to handle missing data
 
 ### clustering
 * build clusters using the following algorithms

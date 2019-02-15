@@ -78,9 +78,11 @@ class PrepControlPane(tk.Frame):
         )
         label_norm.grid(row=self.row, column=0, columnspan=6)
         # scale in to 0-1
-        Button(self, "scale 01", 1, 1, 2, lambda: self.scale_01())
+        Button(self, "scale 0~1", 1, 0, 2, lambda: self.scale_01())
+        # scale in to -1 - 1
+        Button(self, "scale -1~1", 0, 2, 2, lambda: self.scale_11())
         # normalization
-        Button(self, "scale norm", 0, 3, 2, lambda: self.norm())
+        Button(self, "scale norm", 0, 4, 2, lambda: self.norm())
 
         # encode
         self.row += 1
@@ -113,13 +115,7 @@ class PrepControlPane(tk.Frame):
         )
         label_sample.grid(row=self.row, column=0, columnspan=6)
         self.row += 1
-        label_nrow = tk.Label(self, text="num of rows:",
-                              font=LABEL, bg='#F3F3F3')
-        label_nrow.grid(row=self.row, column=0, columnspan=2)
-        entry_nrow = tk.Entry(self, highlightbackground='#F3F3F3', width=5)
-        entry_nrow.grid(row=self.row, column=2, columnspan=2)
-        self.entry_nrow = entry_nrow
-        Button(self, "sample", 0, 4, 2, lambda: self.sample())
+        Button(self, "sample", 1, 0, 6, lambda: self.sample_pop_up())
 
         # deal with missing value
         self.row += 1
@@ -139,6 +135,12 @@ class PrepControlPane(tk.Frame):
         df = self.df
         for f in self.select.tags:
             df[f] = (df[f] - df[f].min()) / (df[f].max() - df[f].min())
+        self.controller.reload()
+
+    def scale_11(self):
+        df = self.df
+        for f in self.select.tags:
+            df[f] = 2 * (df[f] - df[f].min()) / (df[f].max() - df[f].min()) - 1
         self.controller.reload()
 
     def norm(self):
@@ -226,7 +228,7 @@ class PrepControlPane(tk.Frame):
 
         label = tk.Label(
             pop_up_win, text="number of quantiles:",
-            font=LABEL, bg='#F3F3F3'
+            font=LABEL, bg='white'
         )
         label.grid(row=0, column=0)
         entry_nq = tk.Entry(pop_up_win, highlightbackground='#F3F3F3', width=10)
@@ -235,7 +237,6 @@ class PrepControlPane(tk.Frame):
 
         btn = tk.Button(pop_up_win, text="Encode", command=self.q_encoder)
         btn.grid(row=2, column=0)
-
         self.pop_up_win = pop_up_win
 
     def drop_index_pop_up(self):
@@ -244,7 +245,7 @@ class PrepControlPane(tk.Frame):
 
         label = tk.Label(
             pop_up_win, text="index: ",
-            font=LABEL, bg='#F3F3F3'
+            font=LABEL, bg='white'
         )
         label.grid(row=0, column=0)
         entry_index = tk.Entry(pop_up_win, highlightbackground='#F3F3F3', width=10)
@@ -253,5 +254,21 @@ class PrepControlPane(tk.Frame):
 
         btn = tk.Button(pop_up_win, text="drop", command=self.drop_index)
         btn.grid(row=2, column=0)
+        self.pop_up_win = pop_up_win
 
+    def sample_pop_up(self):
+        pop_up_win = tk.Toplevel()
+        pop_up_win.wm_title("sample")
+
+        label = tk.Label(
+            pop_up_win, text="number of rows",
+            font=LABEL, bg='white'
+        )
+        label.grid(row=0, column=0)
+        entry_nrow = tk.Entry(pop_up_win, highlightbackground='white', width=10)
+        entry_nrow.grid(row=1, column=0)
+        self.entry_nrow = entry_nrow
+
+        btn = tk.Button(pop_up_win, text="sample", command=self.sample)
+        btn.grid(row=2, column=0)
         self.pop_up_win = pop_up_win
