@@ -1,15 +1,27 @@
 import tkinter as tk
 import pandas as pd
+from sklearn.manifold import TSNE
 from sklearn.cluster import MiniBatchKMeans
+from sklearn.decomposition import PCA
+from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
-from libs.plot import Plot
 from libs.font import TITLE, SECTION, LABEL
-from pages.clustering.base import BaseClusteringPage
-from pages.clustering.base import BaseControlPane
 
 
-class ClusteringKmeansPage(BaseClusteringPage):
+class BaseClusteringPage(tk.Frame):
+
+    def __init__(self, master, controller):
+        tk.Frame.__init__(self, master)
+        self.master = master
+        self.controller = controller
+        self.plot = None
+        self.init_frame()
+
+    def reload(self):
+        self.df = self.controller.DF
+        self.ctrl_pane.df = self.df
+        self.ctrl_pane.reload()
 
     def init_frame(self):
         # split out left panel
@@ -17,7 +29,7 @@ class ClusteringKmeansPage(BaseClusteringPage):
         vertical_split.pack(fill=tk.BOTH, expand=1)
         self.df = self.controller.DF
         # add control pane
-        ctrl_pane = KmeansControlPane(vertical_split, self)
+        ctrl_pane = BaseControlPane(vertical_split, self)
         self.ctrl_pane = ctrl_pane
         vertical_split.add(ctrl_pane)
         # add plot canvas
@@ -28,7 +40,21 @@ class ClusteringKmeansPage(BaseClusteringPage):
         self.vertical = vertical_split
 
 
-class KmeansControlPane(BaseControlPane):
+class BaseControlPane(tk.Frame):
+
+    def __init__(self, master, controller=None):
+        tk.Frame.__init__(self, master, bg='#F3F3F3')
+        self.master = master
+        self.controller = controller
+        self.df = self.controller.df
+        self.plot = self.controller.plot
+        self.select = None
+        self.row = 0
+        self.init_frame()
+
+    def reload(self):
+        self.row = 0
+        self.init_frame()
 
     def init_frame(self):
         # title
@@ -100,3 +126,32 @@ class KmeansControlPane(BaseControlPane):
         )
         # default is plotting first features
         self.plot.plot_2d_scatter(X[:, :2], model.labels_)
+
+    def plot_radvis(self):
+        cls = self.entry_col_name.get()
+        feat_list = list(self.select.tags) + [cls]
+        tmp = self.df[feat_list]
+        self.plot.clear()
+        self.plot.plot_radviz(tmp, cls)
+
+    def plot_tsne(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        X_embedded = TSNE().fit_transform(X)
+        self.plot.clear()
+        self.plot.plot_2d_scatter(X_embedded, y)
+
+    def plot_pca(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        X_embedded = PCA(n_components=2).fit_transform(X)
+        self.plot.clear()
+        self.plot.plot_2d_scatter(X_embedded, y)
+
+    def clear(self):
+        self.select.clear()
+        self.plot.clear()

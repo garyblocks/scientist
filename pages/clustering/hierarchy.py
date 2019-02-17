@@ -3,27 +3,15 @@ import pandas as pd
 import pylab
 import matplotlib
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
 from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
 from libs.font import TITLE, SECTION, LABEL
+from pages.clustering.base import BaseClusteringPage
+from pages.clustering.base import BaseControlPane
 
 
-class ClusteringHierarchyPage(tk.Frame):
-
-    def __init__(self, master, controller):
-        tk.Frame.__init__(self, master)
-        self.master = master
-        self.controller = controller
-        self.plot = None
-        self.init_frame()
-
-    def reload(self):
-        self.df = self.controller.DF
-        self.ctrl_pane.df = self.df
-        self.ctrl_pane.reload()
+class ClusteringHierarchyPage(BaseClusteringPage):
 
     def init_frame(self):
         # split out left panel
@@ -42,7 +30,7 @@ class ClusteringHierarchyPage(tk.Frame):
         self.vertical = vertical_split
 
 
-class HierarchyControlPane(tk.Frame):
+class HierarchyControlPane(BaseControlPane):
 
     def __init__(self, master, controller=None):
         tk.Frame.__init__(self, master, bg='#F3F3F3')
@@ -53,10 +41,6 @@ class HierarchyControlPane(tk.Frame):
         self.select = None
         self.row = 0
         self.axes = []
-        self.init_frame()
-
-    def reload(self):
-        self.row = 0
         self.init_frame()
 
     def init_frame(self):
@@ -201,31 +185,6 @@ class HierarchyControlPane(tk.Frame):
         pylab.colorbar(im, cax=axcolor)
         self.axes = [axdendro, axmatrix, axcolor]
         self.plot.canvas.draw()
-
-    def plot_radvis(self):
-        cls = self.entry_col_name.get()
-        feat_list = list(self.select.tags) + [cls]
-        tmp = self.df[feat_list]
-        self.plot.clear()
-        self.plot.plot_radviz(tmp, cls)
-
-    def plot_tsne(self):
-        feat_list = list(self.select.tags)
-        X = self.df[feat_list].values
-        cls = self.entry_col_name.get()
-        y = self.df[cls].values
-        X_embedded = TSNE().fit_transform(X)
-        self.plot.clear()
-        self.plot.plot_2d_scatter(X_embedded, y)
-
-    def plot_pca(self):
-        feat_list = list(self.select.tags)
-        X = self.df[feat_list].values
-        cls = self.entry_col_name.get()
-        y = self.df[cls].values
-        X_embedded = PCA(n_components=2).fit_transform(X)
-        self.plot.clear()
-        self.plot.plot_2d_scatter(X_embedded, y)
 
     def clear(self):
         self.select.clear()

@@ -1,27 +1,15 @@
 import tkinter as tk
 import pandas as pd
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
 from sklearn.cluster import AffinityPropagation
 from libs.plot import Plot
 from libs.button import Button
 from libs.select import Select
 from libs.font import TITLE, SECTION, LABEL
+from pages.clustering.base import BaseClusteringPage
+from pages.clustering.base import BaseControlPane
 
 
-class ClusteringApPage(tk.Frame):
-
-    def __init__(self, master, controller):
-        tk.Frame.__init__(self, master)
-        self.master = master
-        self.controller = controller
-        self.plot = None
-        self.init_frame()
-
-    def reload(self):
-        self.df = self.controller.DF
-        self.ctrl_pane.df = self.df
-        self.ctrl_pane.reload()
+class ClusteringApPage(BaseClusteringPage):
 
     def init_frame(self):
         # split out left panel
@@ -40,21 +28,7 @@ class ClusteringApPage(tk.Frame):
         self.vertical = vertical_split
 
 
-class ApControlPane(tk.Frame):
-
-    def __init__(self, master, controller=None):
-        tk.Frame.__init__(self, master, bg='#F3F3F3')
-        self.master = master
-        self.controller = controller
-        self.df = self.controller.df
-        self.plot = self.controller.plot
-        self.select = None
-        self.row = 0
-        self.init_frame()
-
-    def reload(self):
-        self.row = 0
-        self.init_frame()
+class ApControlPane(BaseControlPane):
 
     def init_frame(self):
         # title
@@ -113,32 +87,3 @@ class ApControlPane(tk.Frame):
         )
         # default is plotting first features
         self.plot.plot_2d_scatter(X[:, :2], model.labels_)
-
-    def plot_radvis(self):
-        cls = self.entry_col_name.get()
-        feat_list = list(self.select.tags) + [cls]
-        tmp = self.df[feat_list]
-        self.plot.clear()
-        self.plot.plot_radviz(tmp, cls)
-
-    def plot_tsne(self):
-        feat_list = list(self.select.tags)
-        X = self.df[feat_list].values
-        cls = self.entry_col_name.get()
-        y = self.df[cls].values
-        X_embedded = TSNE().fit_transform(X)
-        self.plot.clear()
-        self.plot.plot_2d_scatter(X_embedded, y)
-
-    def plot_pca(self):
-        feat_list = list(self.select.tags)
-        X = self.df[feat_list].values
-        cls = self.entry_col_name.get()
-        y = self.df[cls].values
-        X_embedded = PCA(n_components=2).fit_transform(X)
-        self.plot.clear()
-        self.plot.plot_2d_scatter(X_embedded, y)
-
-    def clear(self):
-        self.select.clear()
-        self.plot.clear()
