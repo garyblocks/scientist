@@ -74,6 +74,7 @@ class ApControlPane(BaseControlPane):
         Button(self, "t-SNE", 1, 0, 2, lambda: self.plot_tsne())
         Button(self, "radviz", 0, 2, 2, lambda: self.plot_radvis())
         Button(self, "PCA", 0, 4, 2, lambda: self.plot_pca())
+        Button(self, "profile", 1, 0, 2, lambda: self.plot_profile())
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 

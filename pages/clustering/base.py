@@ -152,6 +152,14 @@ class BaseControlPane(tk.Frame):
         self.plot.clear()
         self.plot.plot_2d_scatter(X_embedded, y)
 
+    def plot_profile(self):
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        cls = self.entry_col_name.get()
+        y = self.df[cls].values
+        self.plot.clear()
+        self.plot.plot_profile(X, y, feat_list)
+
     def clear(self):
         self.select.clear()
         self.plot.clear()

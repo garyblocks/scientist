@@ -1,9 +1,12 @@
 import tkinter as tk
 import matplotlib
 import numpy as np
+import matplotlib.patches as mpatches
+import itertools as it
 import pylab
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk # noqa
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 from matplotlib import style
 from pandas.plotting import radviz
 matplotlib.use("TkAgg")
@@ -78,4 +81,31 @@ class Plot(tk.Frame):
         self.ax.legend(
             colors, labels, loc='best', labelspacing=0
         )
+        self.canvas.draw()
+
+    def plot_profile(self, X, y, names):
+        # spilt the data into clusters by class label
+        clusters = {i: [] for i in set(y)}
+        for i in range(len(y)):
+            clusters[y[i]].append(i)
+        # choose subplot
+        # custom x ticks
+        x = [i for i in range(len(names))]
+        self.ax.set_xticks(x, names)
+        # rotate xticks
+        for label in self.ax.get_xmajorticklabels():
+            label.set_rotation(30)
+            label.set_horizontalalignment("right")
+            # Plot first center
+            # ax.plot(x,centers.tolist()[j],color='red')
+            # plot data points in a cluster
+            patches = []
+            colors = it.cycle(plt.cm.rainbow(np.linspace(0, 1, len(clusters))))
+            for cls, clr in zip(clusters, colors):
+                patches.append(mpatches.Patch(color=clr, label=cls))
+                for i in clusters[cls]:
+                    self.ax.plot(x, X[i], color=clr, alpha=0.02, linewidth=2.0)
+            # set ylabel and title
+            self.ax.set_title('profile for each individual')
+        self.ax.legend(handles=patches)
         self.canvas.draw()
