@@ -211,8 +211,26 @@ class ClassificationResultPane(tk.Frame):
         self.metric_table = Table(self, self.metric_df, width=500)
         self.metric_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
         self.row += 1
-        self.train_conf_mx = Table(self, self.train_conf_df, width=500)
-        self.train_conf_mx.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
-        self.row += 1
-        self.test_conf_mx = Table(self, self.test_conf_df, width=500)
-        self.test_conf_mx.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
+        # train confusion matrix
+        self.train_conf_mx = ConfusionMatrix(self)
+        self.train_conf_mx.generate_output(self.train_conf_df)
+        self.train_conf_mx.grid(row=self.row, column=0, columnspan=2)
+        # test confusion matrix
+        self.test_conf_mx = ConfusionMatrix(self)
+        self.test_conf_mx.generate_output(self.test_conf_df)
+        self.test_conf_mx.grid(row=self.row, column=2, columnspan=2)
+
+
+class ConfusionMatrix(tk.Frame):
+
+    def __init__(self, master, controller=None):
+        tk.Frame.__init__(self, master, bd=2, bg='black')
+        self.master = master
+        self.controller = controller
+        self.df = None
+        self.mx = None
+    
+    def generate_output(self, df):
+        self.df = df
+        self.mx = Table(self, self.df)
+        self.mx.pack()
