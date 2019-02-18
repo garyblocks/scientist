@@ -140,7 +140,7 @@ class ClassificationControlPane(tk.Frame):
             return
         self.hold_out()
         if algo == 'kNN':
-            self.model = KNeighborsClassifier()
+            self.knn_pop_up()
         elif algo == 'SGD':
             self.model = SGDClassifier(random_state=101)
         elif algo == 'Logistic':
@@ -183,6 +183,28 @@ class ClassificationControlPane(tk.Frame):
         self.controller.result_pane.train_conf_df = pd.DataFrame(confusion_matrix(self.y_train, y_train_pred))
         self.controller.result_pane.test_conf_df = pd.DataFrame(confusion_matrix(self.y_test, y_test_pred))
         self.controller.reload()
+
+    def knn_pop_up(self):
+        pop_up_win = tk.Toplevel()
+        pop_up_win.wm_title("knn")
+
+        label = tk.Label(
+            pop_up_win, text="k",
+            font=LABEL, bg='white'
+        )
+        label.grid(row=0, column=0)
+        self.entry_k = tk.Entry(pop_up_win, highlightbackground='white', width=10)
+        self.entry_k.grid(row=1, column=0)
+
+        btn = tk.Button(pop_up_win, text="run", command=self.get_k)
+        btn.grid(row=2, column=0)
+
+    def get_k(self):
+        k = self.entry_k.get()
+        if k:
+            params = {'n_neighbors': int(k)}
+            self.model = KNeighborsClassifier(**params)
+            self.evaluate()
 
 
 class ClassificationResultPane(tk.Frame):
