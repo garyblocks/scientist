@@ -56,7 +56,7 @@ class RegressionControlPane(tk.Frame):
 
     def init_frame(self):
         title_lable = tk.Label(
-            self, text="Regression", font=TITLE, bg='#F3F3F3',
+            self, text="Generalized Linear Model", font=TITLE, bg='#F3F3F3',
             width=25
         )
         title_lable.grid(row=self.row, column=0, columnspan=6)
@@ -82,6 +82,20 @@ class RegressionControlPane(tk.Frame):
         feature_menu.grid(row=self.row, column=0, columnspan=6)
         self.chose_cls = chosen_cls
 
+        # choose model family
+        self.row += 1
+        label_fam = tk.Label(self, text="choose distribution family",
+                               font=LABEL, bg='#F3F3F3')
+        label_fam.grid(row=self.row, column=0, columnspan=6)
+        self.row += 1
+        chosen_fam = tk.StringVar(self)
+        choices_fam = ['Binomial', 'Gamma', 'Gaussian', 'InverseGaussian', 'NegativeBinomial', 'Poisson', 'Tweedie']
+        chosen_fam.set(choices_fam[0])
+        fam_menu = tk.OptionMenu(self, chosen_fam, *choices_fam)
+        fam_menu.config(bg="#F3F3F3")
+        fam_menu.grid(row=self.row, column=0, columnspan=6)
+        self.chose_fam = chosen_fam
+
         Button(self, "regress", 1, 0, 6, lambda: self.run())
 
         # default sizes
@@ -95,7 +109,8 @@ class RegressionControlPane(tk.Frame):
         feat_list = list(self.select.tags)
         self.X = self.df[feat_list].values
         self.y = self.df[self.chose_cls.get()].values
-        self.model = sm.GLM(self.y, sm.add_constant(self.X), family=sm.families.Gamma())
+        fam = self.chose_fam.get()
+        self.model = sm.GLM(self.y, sm.add_constant(self.X), family=getattr(sm.families, fam)())
         results = self.model.fit()
         self.evaluate(results)
 
@@ -130,18 +145,17 @@ class RegressionControlPane(tk.Frame):
 
     def get_statistics(self, results):
         stat_names = [
-            # 'R-squared', 'Adj. R-squared', 'F-statistic', 'Prob (F-statistic)',
-            # 'Log-Likelihood', 'AIC', 'BIC', 'Df Model'
+            'Df Model', 'Scale', 'Log-Likelihood', 'Deviance',
+            'Peareson chi2', 'AIC', 'BIC'
         ]
         values = [
-            # np.round(results.rsquared, 4),
-            # np.round(results.rsquared_adj, 4),
-            # np.round(results.fvalue, 4),
-            # np.round(results.f_pvalue, 4),
-            # np.round(results.llf, 4),
-            # np.round(results.aic, 4),
-            # np.round(results.bic, 4),
-            # np.round(results.df_model, 4)
+            np.round(results.df_model, 4),
+            np.round(results.scale, 4),
+            np.round(results.llf, 4),
+            np.round(results.deviance, 4),
+            np.round(results.pearson_chi2, 4),
+            np.round(results.aic, 4),
+            np.round(results.bic, 4)
         ]
         data = np.vstack((np.array(stat_names), np.array(values)))
         columns = ['Stats', 'Values']

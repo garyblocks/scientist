@@ -56,7 +56,7 @@ class RegressionControlPane(tk.Frame):
 
     def init_frame(self):
         title_lable = tk.Label(
-            self, text="Regression", font=TITLE, bg='#F3F3F3',
+            self, text="linear regression", font=TITLE, bg='#F3F3F3',
             width=25
         )
         title_lable.grid(row=self.row, column=0, columnspan=6)

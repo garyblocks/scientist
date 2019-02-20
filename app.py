@@ -90,7 +90,7 @@ class Scientist(tk.Tk):
         )
         analysis_regression_menu.add_command(
             label="glm",
-            command=self.regression_linear
+            command=self.regression_glm
         )
         analysis_menu.add_cascade(
             label="regression",
