@@ -1,6 +1,12 @@
 import tkinter as tk
+from PIL import Image
+import numpy as np
+import os
+from wordcloud import WordCloud, STOPWORDS
 from libs.font import TITLE
 from libs.book import Book
+from libs.plot import Plot
+from libs.button import Button
 # from libs.button import Button
 
 
@@ -11,6 +17,7 @@ class TextViewPage(tk.Frame):
         self.master = master
         self.controller = controller
         self.book = None
+        self.plot = None
         self.init_frame()
 
     def reload(self):
@@ -23,17 +30,18 @@ class TextViewPage(tk.Frame):
 
     def init_frame(self):
         # split out left panel
-        vertical_split = tk.PanedWindow(self)
-        vertical_split.pack(fill=tk.BOTH, expand=1)
+        self.vertical = tk.PanedWindow(self)
+        self.vertical.pack(fill=tk.BOTH, expand=1)
         self.s = self.controller.STR
         # add control pane
-        ctrl_pane = ViewControlPane(vertical_split, self)
+        ctrl_pane = ViewControlPane(self.vertical, self)
         self.ctrl_pane = ctrl_pane
-        vertical_split.add(ctrl_pane)
-        book = Book(vertical_split, string=self.s)
+        self.vertical.add(ctrl_pane)
+        book = Book(self.vertical, string=self.s)
         self.book = book
-        vertical_split.add(book)
-        self.vertical = vertical_split
+        self.vertical.add(book)
+        plot = Plot(self.vertical)
+        self.plot = plot
 
 
 class ViewControlPane(tk.Frame):
@@ -44,12 +52,15 @@ class ViewControlPane(tk.Frame):
         self.controller = controller
         self.s = self.controller.s
         self.book = self.controller.book
+        self.plot = self.controller.plot
         self.row = 0
         self.init_frame()
 
     def reload(self):
         self.s = self.controller.s
         self.row = 0
+        self.book = self.controller.book
+        self.plot = self.controller.plot
         self.init_frame()
 
     def init_frame(self):
@@ -60,4 +71,31 @@ class ViewControlPane(tk.Frame):
         title_table.grid(row=self.row, column=0, columnspan=6)
 
         # display random rows
-        # Button(self, "word cloud", 1, 0, 2, lambda: self.word_cloud())
+        Button(self, "word cloud", 1, 2, 2, lambda: self.word_cloud())
+
+    def word_cloud(self):
+        self.show_plot()
+        # set up the word cloud
+        path_to_pic = os.getcwd() + '/static/default_pic.png'
+        mask = np.array(Image.open(path_to_pic))
+        stopwords = set(STOPWORDS)
+        wc = WordCloud(
+            background_color="white",
+            max_words=200,
+            mask=mask,
+            stopwords=stopwords
+        )
+        # generate word cloud
+        wc.generate(self.s)
+        # show
+        self.plot.ax.imshow(wc, interpolation='bilinear')
+        self.plot.ax.axis("off")
+        self.plot.canvas.draw()
+
+    def show_plot(self):
+        self.controller.vertical.forget(self.book)
+        self.controller.vertical.add(self.plot)
+
+    def show_book(self):
+        self.controller.vertical.forget(self.plot)
+        self.controller.vertical.add(self.book)
