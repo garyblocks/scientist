@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from matplotlib import style
+from mpl_toolkits.mplot3d import Axes3D
 from pandas.plotting import radviz
 matplotlib.use("TkAgg")
 style.use("ggplot")
@@ -40,6 +41,9 @@ class Plot(tk.Frame):
         self.ax = self.fig.add_subplot(111)
         self.canvas.draw()
         self.toolbar.update()
+
+    def switch_to_3d_ax(self):
+        self.ax = Axes3D(self.fig, rect=[0, 0, .95, 1], elev=48, azim=134)
 
     def add_color_bar(self, mappable=None, label=""):
         if not mappable:

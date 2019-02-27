@@ -100,6 +100,7 @@ class ViewControlPane(tk.Frame):
         Button(self, "area", 0, 4, 2, lambda: self.plot_area())
         Button(self, "scatter matrix", 1, 0, 2, lambda: self.plot_scatter_matrix())
         Button(self, "hexbin", 0, 2, 2, lambda: self.plot_hexbin())
+        Button(self, "3d scatter", 0, 4, 2, lambda: self.plot_3d())
 
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
@@ -221,7 +222,21 @@ class ViewControlPane(tk.Frame):
             )
         self.plot.ax.grid(axis='x')
 
+    def plot_3d(self):
+        self.show_plot()
+        self.plot.switch_to_3d_ax()
+        feat_list = list(self.select.tags)
+        X = self.df[feat_list].values
+        if len(feat_list) != 3:
+            return False
+        self.plot.ax.scatter(X[:, 0], X[:, 1], X[:, 2])
+        self.plot.ax.set_xlabel(feat_list[0])
+        self.plot.ax.set_ylabel(feat_list[1])
+        self.plot.ax.set_zlabel(feat_list[2])
+        self.plot.canvas.draw()
+
     def show_plot(self):
+        self.plot.clear()
         self.controller.vertical.forget(self.controller.table)
         self.controller.vertical.add(self.plot)
 
