@@ -94,6 +94,8 @@ class PrepControlPane(tk.Frame):
         Button(self, "k hot", 0, 2, 2, lambda: self.one_hot())
         # encode by quantile
         Button(self, "quantile", 0, 4, 2, lambda: self.q_encode_pop_up())
+        # encode by sigma
+        Button(self, "sigma", 1, 0, 2, lambda: self.sigma_encoder())
 
         # drop
         self.row += 1
@@ -177,6 +179,14 @@ class PrepControlPane(tk.Frame):
             for i, n in enumerate(names):
                 df[n] = pd.DataFrame(data[:, i], columns=[n])
             df.drop(columns=f, inplace=True)
+        self.controller.reload()
+
+    def sigma_encoder(self):
+        df = self.df
+        for f in self.select.tags:
+            new_col_name = f + '_sigma'
+            df[new_col_name] = (df[f] - df[f].mean()) / df[f].std()
+            df[new_col_name] = df[new_col_name].round()
         self.controller.reload()
 
     def drop_feature(self):
