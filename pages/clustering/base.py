@@ -1,7 +1,6 @@
 import tkinter as tk
-import pandas as pd
+from abc import ABC, abstractmethod
 from sklearn.manifold import TSNE
-from sklearn.cluster import MiniBatchKMeans
 from sklearn.decomposition import PCA
 from libs.plot import Plot
 from libs.button import Button
@@ -9,7 +8,7 @@ from libs.select import Select
 from libs.font import TITLE, SECTION, LABEL
 
 
-class BaseClusteringPage(tk.Frame):
+class BaseClusteringPage(tk.Frame, ABC):
 
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master)
@@ -96,7 +95,7 @@ class BaseControlPane(tk.Frame):
         self.entry_col_name = entry_col_name
 
         # run the clustering algorithm
-        Button(self, "cluster", 1, 0, 6, lambda: self.kmeans())
+        Button(self, "cluster", 1, 0, 6, lambda: self.cluster())
 
         # visualization
         self.row += 1
@@ -112,20 +111,26 @@ class BaseControlPane(tk.Frame):
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
-    def kmeans(self):
-        feat_list = list(self.select.tags)
-        X = self.df[feat_list].values
-        k = int(self.entry_k.get())
-        model = MiniBatchKMeans(
-            init='k-means++', n_clusters=k, batch_size=45,
-            n_init=10, max_no_improvement=10, verbose=0
+    def cluster(self):
+        try:
+            self.run()
+        except ValueError as e:
+            self.alert_pop_up(str(e))
+
+    def alert_pop_up(self, msg):
+        pop_up_win = tk.Toplevel()
+        pop_up_win.wm_title("Alert")
+
+        label = tk.Label(
+            pop_up_win, text=msg,
+            font=SECTION, bg='#EEDFDE',
+            fg='#A93E2F', padx=20, pady=20
         )
-        model.fit(X)
-        self.df[self.entry_col_name.get()] = pd.Series(
-            model.labels_, index=self.df.index
-        )
-        # default is plotting first features
-        self.plot.plot_2d_scatter(X[:, :2], model.labels_)
+        label.grid(row=0, column=0)
+    
+    @abstractmethod
+    def run(self):
+        pass
 
     def plot_radvis(self):
         cls = self.entry_col_name.get()

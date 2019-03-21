@@ -117,7 +117,7 @@ class HierarchyControlPane(BaseControlPane):
         self.entry_col_name = entry_col_name
 
         # run the clustering algorithm
-        Button(self, "cluster", 1, 0, 6, lambda: self.hierarchy())
+        Button(self, "cluster", 1, 0, 6, lambda: self.cluster())
 
         # visualization
         self.row += 1
@@ -135,7 +135,7 @@ class HierarchyControlPane(BaseControlPane):
         # clear plot
         Button(self, "clear", 1, 0, 6, lambda: self.clear())
 
-    def hierarchy(self):
+    def run(self):
         feat_list = list(self.select.tags)
         X = self.df[feat_list].values
         k = int(self.entry_k.get())
