@@ -230,29 +230,51 @@ class ClassificationResultPane(tk.Frame):
         self.init_frame()
 
     def init_frame(self):
-        self.metric_table = Table(self, self.metric_df, width=500)
-        self.metric_table.grid(row=self.row, sticky=tk.N+tk.S+tk.E+tk.W)
-        self.row += 1
+        # metric_table
+        self.metric_table = MetricTable(self)
+        self.metric_table.show(self.metric_df)
+        self.metric_table.grid(row=self.row, column=0, columnspan=2)
         # train confusion matrix
-        self.train_conf_mx = ConfusionMatrix(self)
-        self.train_conf_mx.generate_output(self.train_conf_df)
-        self.train_conf_mx.grid(row=self.row, column=0, columnspan=2)
+        self.train_conf_mx = ConfusionMatrix(self, None, "train confusion matrix")
+        self.train_conf_mx.show(self.train_conf_df)
+        self.train_conf_mx.grid(row=self.row, column=2, columnspan=2)
         # test confusion matrix
-        self.test_conf_mx = ConfusionMatrix(self)
-        self.test_conf_mx.generate_output(self.test_conf_df)
-        self.test_conf_mx.grid(row=self.row, column=2, columnspan=2)
+        self.test_conf_mx = ConfusionMatrix(self, None, "test confusion matrix")
+        self.test_conf_mx.show(self.test_conf_df)
+        self.test_conf_mx.grid(row=self.row, column=4, columnspan=2)
 
 
-class ConfusionMatrix(tk.Frame):
+class MetricTable(tk.Frame):
 
     def __init__(self, master, controller=None):
         tk.Frame.__init__(self, master, bd=2, bg='black')
         self.master = master
         self.controller = controller
         self.df = None
-        self.mx = None
+        self.tbl = None
     
-    def generate_output(self, df):
+    def show(self, df):
+        self.df = df
+        self.tbl = Table(self, self.df)
+        self.tbl.pack()
+
+
+class ConfusionMatrix(tk.Frame):
+
+    def __init__(self, master, controller=None, name='confusion matrix'):
+        tk.Frame.__init__(self, master, bd=2, bg='black')
+        self.master = master
+        self.controller = controller
+        self.df = None
+        self.mx = None
+        self.name = name
+    
+    def show(self, df):
+        label = tk.Label(
+            self, text=self.name,
+            font=LABEL, bg='white'
+        )
+        label.pack()
         self.df = df
         self.mx = Table(self, self.df)
         self.mx.pack()
